@@ -19,14 +19,14 @@ def parse_mbox_file(mbox_file_path):
 
         # Iterate through each message in the Mbox file
         for i, message in enumerate(mbox):
-            data = {}
-            data["id"] = message["date"]
+            trans = {}
+            trans["id"] = message["date"]
 
             # Extract header information
             # data["from"] = message["from"]
             # data["to"] = message["to"]
             # data["subject"] = message["subject"]
-            data["date_raw"] = message["date"]
+            trans["date_raw"] = message["date"]
 
             # Extract and print the email body (plain text part)
             if message.is_multipart():
@@ -34,32 +34,38 @@ def parse_mbox_file(mbox_file_path):
                     ctype = part.get_content_type()
                     cdispo = str(part.get("Content-Disposition"))
 
-                    # print(f"Message: {data['id']}, Content-Type: {ctype}, Content-Disposition: {cdispo}")
+                    # trans.setdefault("warning", []).append(
+                    #     f"Message: {trans['id']}, Content-Type: {ctype}, Content-Disposition: {cdispo}"
+                    # )
 
                     # Only consider text parts, not attachments
                     if (ctype == "text/html") and "attachment" not in cdispo:
-                        if "body_html" in data:
-                            print(f"[Multiple html bodies in message {i}]")
+                        if "body_html" in trans:
+                            trans.setdefault("warning", []).append(
+                                "Multiple html bodies in message"
+                            )
                         try:
-                            data["body_html"] = part.get_payload(decode=True).decode()
+                            trans["body_html"] = part.get_payload(decode=True).decode()
                         except UnicodeDecodeError:
-                            print("[Body could not be decoded]")
+                            trans.setdefault("warning", []).append(
+                                f"Body could not be decoded (multipart, {ctype})"
+                            )
                         break  # Stop after finding the first plain text part
             else:
                 try:
-                    data["body_text"] = message.get_payload(decode=True).decode()
+                    trans["body_text"] = message.get_payload(decode=True).decode()
                 except UnicodeDecodeError:
-                    print("[Body could not be decoded]")
+                    trans.setdefault("warning", []).append("Body could not be decoded")
 
             # validate data
-            if sorted(data.keys()) != ["body_html", "date_raw", "id"]:
-                print(f"[Unexpected data keys: {sorted(data.keys())}]")
+            # if sorted(trans.keys()) != ["body_html", "date_raw", "id", "warning"]:
+            #     trans.setdefault("warning", []).append(f"[Unexpected data keys: {sorted(trans.keys())}]")
 
-            transactions.append(data)
+            transactions.append(trans)
 
     except FileNotFoundError:
-        print(f"[Error: Mbox file not found at {mbox_file_path}]")
+        print(f"Error: Mbox file not found at {mbox_file_path}")
     except Exception as e:
-        print(f"[An error occurred: {e}]")
+        print(f"An error occurred: {e}")
 
     return transactions
