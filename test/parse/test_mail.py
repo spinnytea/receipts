@@ -11,8 +11,17 @@ class TestParseMail(unittest.TestCase):
     def test_count(self):
         self.assertEqual(len(self.transactions), 42)
 
+    def test_keys(self):
+        for trans in self.transactions:
+            self.assertEqual(
+                sorted(trans.keys()),
+                ["body_html", "date_raw", "id", "idx"],
+                f"bad keys for transaction {trans['id']}",
+            )
+
     def test_one(self):
         trans = self.transactions[39]
-        self.assertEqual(sorted(trans.keys()), ["body_html", "date_raw", "idx"])
+        self.assertEqual(sorted(trans.keys()), ["body_html", "date_raw", "id", "idx"])
+        self.assertEqual(trans["id"], "39@Sat, 26 Apr 2025 15:23:14 +0000")
         self.assertEqual(trans["idx"], 39)
         self.assertEqual(trans["date_raw"], "Sat, 26 Apr 2025 15:23:14 +0000")

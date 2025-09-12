@@ -9,13 +9,24 @@ class TestParseReceipt(unittest.TestCase):
     def setUpClass(self):
         transactions = parse_mbox_file("raw/dumps/Purchase-Groceries.mbox")
         parse_html_body(transactions)
+
+        self.transactions = transactions
         self.one = transactions[39]
 
     def test_one(self):
         trans = self.one
-        self.assertEqual(sorted(trans.keys()), ["date_raw", "idx", "receipt_raw"])
-        self.assertEqual(trans["idx"], 39)
-        self.assertEqual(trans["date_raw"], "Sat, 26 Apr 2025 15:23:14 +0000")
+        self.assertEqual(sorted(trans.keys()), ["date_raw", "id", "idx", "receipt_raw"])
 
         receipt_raw = trans["receipt_raw"]
         self.assertEqual(len(receipt_raw), 53)
+        self.assertEqual(len(receipt_raw[0]), 38)
+
+        all_lens = set([len(line) for line in receipt_raw])
+        self.assertEqual(all_lens, {38})
+
+    def test_all_lens(self):
+        for trans in self.transactions:
+            for line in trans["receipt_raw"]:
+                # this is over testing
+                # not sure this really matters
+                self.assertEqual(len(line), 38)

@@ -29,6 +29,8 @@ def parse_mbox_file(mbox_file_path):
             # data["subject"] = message["subject"]
             trans["date_raw"] = message["date"]
 
+            trans["id"] = f"{i}@{trans['date_raw']}"
+
             # Extract and print the email body (plain text part)
             if message.is_multipart():
                 for part in message.walk():

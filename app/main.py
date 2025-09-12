@@ -9,10 +9,6 @@ def eml_to_stats(mbox_filepath):
     transactions = parse_mbox_file(mbox_filepath)
     parse_html_body(transactions)
 
-    # TODO write some unit tests
-    #  - just isolate one email or something
-    #  - and write tests for every step of the way
-
     # TODO parse date
     # TODO parse receipt paper -> itemized
 
