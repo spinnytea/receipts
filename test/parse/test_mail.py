@@ -11,7 +11,7 @@ class TestParseMail(unittest.TestCase):
     def test_count(self):
         self.assertEqual(len(self.transactions), 42)
 
-    def test_keys(self):
+    def test_all_keys(self):
         for trans in self.transactions:
             self.assertEqual(
                 sorted(trans.keys()),
