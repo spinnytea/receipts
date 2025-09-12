@@ -15,12 +15,13 @@ def parse_mbox_file(mbox_file_path):
     transactions = []
     try:
         # Open the Mbox file
+        # TODO class MboxReader / with MboxReader(mboxfilename) as mbox:
         mbox = mailbox.mbox(mbox_file_path)
 
         # Iterate through each message in the Mbox file
         for i, message in enumerate(mbox):
             trans = {}
-            trans["id"] = message["date"]
+            trans["idx"] = i
 
             # Extract header information
             # data["from"] = message["from"]
@@ -57,15 +58,15 @@ def parse_mbox_file(mbox_file_path):
                 except UnicodeDecodeError:
                     trans.setdefault("warning", []).append("Body could not be decoded")
 
-            # validate data
-            # if sorted(trans.keys()) != ["body_html", "date_raw", "id", "warning"]:
-            #     trans.setdefault("warning", []).append(f"[Unexpected data keys: {sorted(trans.keys())}]")
-
             transactions.append(trans)
+
+        mbox.close()
 
     except FileNotFoundError:
         print(f"Error: Mbox file not found at {mbox_file_path}")
+        mbox.close()
     except Exception as e:
         print(f"An error occurred: {e}")
+        mbox.close()
 
     return transactions
