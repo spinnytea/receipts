@@ -56,12 +56,15 @@ class TestParseReceipt(unittest.TestCase):
                 if category == item["category"]:
                     simplify_one_item(item)
 
-        self.assertEqual(sorted(trans.keys()), ["id", "receipt_data", "warning"])
+        self.assertEqual(sorted(trans.keys()), ["id", "receipt_data"])
         self.assertEqual(
-            sorted(trans["receipt_data"].keys()), ["items", "skipped", "store_number"]
+            sorted(trans["receipt_data"].keys()),
+            ["balance", "items", "store_number", "tax"],
         )
 
         self.assertEqual(trans["receipt_data"]["store_number"], 55)
+        self.assertEqual(trans["receipt_data"]["tax"], Decimal("0.47"))
+        self.assertEqual(trans["receipt_data"]["balance"], Decimal("111.41"))
         items = trans["receipt_data"]["items"].copy()
         items.reverse()
         self.assertEqual(len(items), 31)
@@ -568,8 +571,7 @@ class TestParseReceipt(unittest.TestCase):
         # we should have verified them all
         self.assertEqual(len(items), 0)
 
-        # FIXME finish
-        # if trans.get("warning", []) and "(skipped)" in ".".join(trans.get("warning")):
-        #     print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
-        # self.assertEqual(trans.get("warning", []), [])
-        # self.assertEqual(trans["receipt_data"].get("skipped"), [])
+        if trans.get("warning", []) and "(skipped)" in ".".join(trans.get("warning")):
+            print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
+        self.assertEqual(trans.get("warning", []), [])
+        self.assertEqual(trans["receipt_data"].get("skipped", []), [])

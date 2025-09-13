@@ -1,5 +1,5 @@
 import re
-from decimal import Decimal
+from decimal import ROUND_UP, Decimal
 from typing import List
 
 CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT|PRODUCE)\s+")
@@ -19,6 +19,13 @@ ITEMIZED_LINE = re.compile(r"^W?T?\s+(.{16})\s*(\d+\.\d\d)( T|-T| F|-F)$")
 
 WEIGHT_LINE = re.compile(r"^ (\d+\.\d\d lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
 QUANTITY_LINE = re.compile(r"^ (\d+ @ \d+\.\d\d)\s+$")
+
+# XXX never ever ever hard code the tax rate, set it as an env var or something
+SKIP_TAX_CHECK = False
+
+
+def APPLY_TAX_RATE(amount):
+    return (amount * Decimal("0.06")).quantize(Decimal("0.01"), rounding=ROUND_UP)
 
 
 def parse_receipt_raw(transactions):
@@ -44,6 +51,31 @@ def _parse_receipt_raw(trans):
         trans.setdefault("warning", []).append(
             "Some of the receipt lines have not been accouned for (skipped)"
         )
+
+    if "tax" in receipt_data:
+        sum = Decimal(0)
+        for item in receipt_data["items"]:
+            if item.get("taxable", False):
+                sum += item["price"]
+        if not sum or sum == Decimal(0):
+            trans.setdefault("warning", []).append("tax but no taxable items?")
+        if not SKIP_TAX_CHECK and receipt_data["tax"] != APPLY_TAX_RATE(sum):
+            trans.setdefault("warning", []).append(
+                f"what is this tax amount? (tax) {receipt_data['tax']} != (sum) {sum} * (rate) {Decimal('0.06')} == (calc) {APPLY_TAX_RATE(sum)}"
+            )
+
+    if "balance" in receipt_data:
+        sum = Decimal(0)
+        for item in receipt_data["items"]:
+            sum += item["price"]
+        if "tax" in receipt_data:
+            sum += receipt_data["tax"]
+        if sum != receipt_data["balance"]:
+            trans.setdefault("warning", []).append(
+                f"balance mismatch? (listed) {receipt_data['balance']} != (sum) {sum}"
+            )
+    else:
+        trans.setdefault("warning", []).append("receipt has no balance")
 
     trans["receipt_data"] = receipt_data
 
@@ -77,6 +109,32 @@ class ReceiptParser:
             if set(line) == {"*"}:
                 # if line all stars, then we are done
                 self.parsing_groceries = False
+
+            match_tax = re.match(r"^\s+TAX\s+(\d+\.\d\d)  $", line)
+            if match_tax:
+                self.current_item = None
+                self.current_category = None
+                self.parsing_groceries = False
+                [tax] = match_tax.groups()
+                if "tax" in self.data:
+                    self.warning.append(
+                        f"duplicate tax? old: {self.data['tax']}, new: {tax}"
+                    )
+                self.data["tax"] = Decimal(tax)
+                continue
+
+            match_balance = re.match(r"^\s+\**\s+BALANCE\s+(\d+\.\d\d)  $", line)
+            if match_balance:
+                self.current_item = None
+                self.current_category = None
+                self.parsing_groceries = False
+                [balance] = match_balance.groups()
+                if "balance" in self.data:
+                    self.warning.append(
+                        f"duplicate balance? old: {self.data['balance']}, new: {balance}"
+                    )
+                self.data["balance"] = Decimal(balance)
+                continue
 
             if not self.parsing_groceries:
                 # TODO do not skip everything else?
