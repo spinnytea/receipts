@@ -1,4 +1,5 @@
 import unittest
+from decimal import Decimal
 
 from app.parse.mail import parse_mbox_file
 from app.parse.receipt import _parse_receipt_raw
@@ -30,12 +31,93 @@ class TestParseReceipt(unittest.TestCase):
 
         self.assertEqual(sorted(trans.keys()), ["id", "receipt_data", "warning"])
         self.assertEqual(
-            sorted(trans["receipt_data"].keys()), ["skipped", "store_number"]
+            sorted(trans["receipt_data"].keys()), ["items", "skipped", "store_number"]
         )
 
-        data_cp = trans["receipt_data"].copy()
-        data_cp.pop("skipped")
-        self.assertEqual(data_cp, {"store_number": 55})
+        self.assertEqual(trans["receipt_data"]["store_number"], 55)
+        items = trans["receipt_data"]["items"].copy()
+        items.reverse()
+        self.assertEqual(len(items), 6)
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "PHIL CRM CHEES8Z",
+                "price": Decimal("3.00"),
+                "category": "DAIRY",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "PHIL CRM CHEES8Z",
+                        "amount": Decimal("3.99"),
+                        "code": " F",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("0.99"),
+                        "code": "-F",
+                    },
+                ],
+            },
+        )
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "BLACKCHRY 0% 4PK",
+                "price": Decimal("5.99"),
+                "category": "DAIRY",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "BLACKCHRY 0% 4PK",
+                        "amount": Decimal("5.99"),
+                        "code": " F",
+                    },
+                ],
+            },
+        )
+        for item in items:
+            if "DAIRY" == item["category"]:
+                del item["adjustments"]
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "PLRS ORG CVN16Z",
+                "price": Decimal("4.99"),
+                "category": "DAIRY",
+                "taxable": False,
+            },
+        )
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "SIGGI STRW 5.3Z",
+                "price": Decimal("2.19"),
+                "category": "DAIRY",
+                "taxable": False,
+            },
+        )
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "YPL OUI DF VNL5Z",
+                "price": Decimal("2.39"),
+                "category": "DAIRY",
+                "taxable": False,
+            },
+        )
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "SB EGGS LRG",
+                "price": Decimal("4.19"),
+                "category": "DAIRY",
+                "taxable": False,
+            },
+        )
 
-        # self.assertEqual(trans["receipt_data"].get("skipped"), [])
+        # we should have verified them all
+        self.assertEqual(len(items), 0)
+
         # FIXME finish
+        # print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
+        # self.assertEqual(trans["receipt_data"].get("skipped"), [])

@@ -1,4 +1,5 @@
 import datetime
+import decimal
 
 date_string = "Sat, 26 Apr 2025 15:23:14 +0000"
 format_string = "%a, %d %b %Y %H:%M:%S %z"
@@ -20,4 +21,6 @@ def parse_date_raw(transactions):
 def datetime_serializer(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()  # Converts to ISO string
+    if isinstance(obj, decimal.Decimal):
+        return float(obj)
     raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
