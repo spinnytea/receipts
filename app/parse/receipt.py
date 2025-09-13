@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 from typing import List
 
-CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT)\s+")
+CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT|PRODUCE)\s+")
 
 # Common receipt codes
 #  T: Taxable item.
@@ -16,6 +16,8 @@ CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT)\s+")
 #  N: Non-taxable item, used by some retailers instead of a code like "F" or "E".
 TAXABLE_CODES = [" T", "-T", "TF", " X"]
 ITEMIZED_LINE = re.compile(r"^W?T?\s+(.{16})\s*(\d+\.\d\d)( T|-T| F|-F)$")
+
+WEIGHT_LINE = re.compile(r"^ (\d+\.\d\d lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
 
 
 def parse_receipt_raw(transactions):
@@ -55,6 +57,7 @@ class ReceiptParser:
         self.parsing_groceries = False
         self.current_item = None
         self.skip_rest = False
+        self.current_weight = None
 
         for line in receipt_raw:
             if line.isspace():
@@ -106,18 +109,35 @@ class ReceiptParser:
                     }
                     self._add_adjustment([name, cost, code])
                     self.data["items"].append(self.current_item)
+
+                    if self.current_weight and line.startswith("WT"):
+                        self._add_weight_readout(shouldHaveCost=False)
+
                     continue
 
                 match_savings = re.match(
                     r"\s+(BONUS BUY SAVINGS)\s+(\d+\.\d\d)(-T|-F)", line
                 )
                 if match_savings:
+                    # FIXME use weight readout
                     self._add_adjustment(match_savings.groups())
                     continue
 
-                match_verify = re.match(r"\s+PRICE YOU PAY\s+(\d+\.\d\d)\s+", line)
+                match_verify = re.match(r"\s+(PRICE YOU PAY)\s+(\d+\.\d\d)\s+", line)
                 if match_verify:
-                    price = Decimal(match_verify.groups()[0])
+                    [text, cost] = match_verify.groups()
+                    price = Decimal(cost)
+                    self.current_item["adjustments"].append(
+                        {
+                            "name": text,
+                            "price": Decimal(cost),
+                            "type": "verify",
+                        }
+                    )
+
+                    if self.current_weight:
+                        self._add_weight_readout(shouldHaveCost=True)
+
                     if price == self.current_item["price"]:
                         self.current_item = None
                         continue
@@ -126,6 +146,11 @@ class ReceiptParser:
                         self.warning.append(
                             f"invalid price? {line} -- {self.current_item}"
                         )
+
+                match_weight = WEIGHT_LINE.match(line)
+                if match_weight:
+                    self.current_weight = match_weight.groups()
+                    continue
 
             # FIXME finish other lines
 
@@ -153,5 +178,48 @@ class ReceiptParser:
                 "name": name.strip(),
                 "amount": Decimal(cost),
                 "code": code,
+                "type": "sum",
             }
         )
+
+    def _add_weight_readout(self, shouldHaveCost=False):
+        [weight_readout, _, cost] = self.current_weight
+        self.current_weight = None
+        last_adjustment = self.current_item["adjustments"][-1]
+        last_adjustment["weight_readout"] = weight_readout
+        if shouldHaveCost:
+            if cost:
+                price = Decimal(cost)
+                last_adjustment["weight_price"] = price
+                if last_adjustment["price"] != price:
+                    self.warning.push(
+                        f"verify price does not match weight cost: {weight_readout}, {cost} -- {self.current_item}"
+                    )
+                if last_adjustment["price"] != price:
+                    self.warning.push(
+                        f"verify price ({last_adjustment['name']}) does not match weight cost: {weight_readout}, {cost} -- {self.current_item}"
+                    )
+                if self.current_item["price"] != price:
+                    self.warning.push(
+                        f"item price ({self.current_item['name']}) does not match weight cost: {weight_readout}, {cost} -- {self.current_item}"
+                    )
+            else:
+                self.warning.push(
+                    f"should be verifying price, but has none? {weight_readout}, {cost} -- {self.current_item}"
+                )
+        else:  # not shouldHaveCost:
+            if cost:
+                self.warning.push(
+                    f"verify weight price on original item? {weight_readout}, {cost} -- {self.current_item}"
+                )
+            else:
+                # valid
+                pass
+
+        # XXX not sure if it should be a separate adjustment?
+        # self.current_item["adjustments"].append(
+        #     {
+        #         "readout": weight_readout,
+        #         "type": "weight_readout",
+        #     }
+        # )

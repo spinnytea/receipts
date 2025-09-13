@@ -1,6 +1,8 @@
+import json
 import unittest
 from decimal import Decimal
 
+from app.parse.date import datetime_serializer
 from app.parse.html import parse_body_html
 from app.parse.mail import parse_mbox_file
 from app.parse.receipt import _parse_receipt_raw, parse_receipt_raw
@@ -42,6 +44,17 @@ class TestParseReceipt(unittest.TestCase):
         trans = {"id": "receipt_raw_sample", "receipt_raw": self.receipt_raw_sample}
         _parse_receipt_raw(trans)
 
+        def simplify_one_item(item):
+            del item["category"]
+            del item["taxable"]
+            del item["adjustments"]
+            return item
+
+        def simplify_matching_items(items, category):
+            for item in items:
+                if category == item["category"]:
+                    simplify_one_item(item)
+
         self.assertEqual(sorted(trans.keys()), ["id", "receipt_data", "warning"])
         self.assertEqual(
             sorted(trans["receipt_data"].keys()), ["items", "skipped", "store_number"]
@@ -50,7 +63,7 @@ class TestParseReceipt(unittest.TestCase):
         self.assertEqual(trans["receipt_data"]["store_number"], 55)
         items = trans["receipt_data"]["items"].copy()
         items.reverse()
-        self.assertEqual(len(items), 15)
+        self.assertEqual(len(items), 24)
         # DAIRY
         self.assertEqual(
             items.pop(),
@@ -64,11 +77,18 @@ class TestParseReceipt(unittest.TestCase):
                         "name": "PHIL CRM CHEES8Z",
                         "amount": Decimal("3.99"),
                         "code": " F",
+                        "type": "sum",
                     },
                     {
                         "name": "BONUS BUY SAVINGS",
                         "amount": Decimal("0.99"),
                         "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("3.00"),
+                        "type": "verify",
                     },
                 ],
             },
@@ -85,20 +105,17 @@ class TestParseReceipt(unittest.TestCase):
                         "name": "BLACKCHRY 0% 4PK",
                         "amount": Decimal("5.99"),
                         "code": " F",
+                        "type": "sum",
                     },
                 ],
             },
         )
-        for item in items:
-            if "DAIRY" == item["category"]:
-                del item["adjustments"]
+        simplify_matching_items(items, "DAIRY")
         self.assertEqual(
             items.pop(),
             {
                 "name": "PLRS ORG CVN16Z",
                 "price": Decimal("4.99"),
-                "category": "DAIRY",
-                "taxable": False,
             },
         )
         self.assertEqual(
@@ -106,8 +123,6 @@ class TestParseReceipt(unittest.TestCase):
             {
                 "name": "SIGGI STRW 5.3Z",
                 "price": Decimal("2.19"),
-                "category": "DAIRY",
-                "taxable": False,
             },
         )
         self.assertEqual(
@@ -115,8 +130,6 @@ class TestParseReceipt(unittest.TestCase):
             {
                 "name": "YPL OUI DF VNL5Z",
                 "price": Decimal("2.39"),
-                "category": "DAIRY",
-                "taxable": False,
             },
         )
         self.assertEqual(
@@ -124,8 +137,6 @@ class TestParseReceipt(unittest.TestCase):
             {
                 "name": "SB EGGS LRG",
                 "price": Decimal("4.19"),
-                "category": "DAIRY",
-                "taxable": False,
             },
         )
         # GENERAL MERCHANDISE
@@ -141,11 +152,18 @@ class TestParseReceipt(unittest.TestCase):
                         "name": "SL GARLIC PRESS",
                         "amount": Decimal("8.59"),
                         "code": " T",
+                        "type": "sum",
                     },
                     {
                         "name": "BONUS BUY SAVINGS",
                         "amount": Decimal("0.86"),
                         "code": "-T",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("7.73"),
+                        "type": "verify",
                     },
                 ],
             },
@@ -163,15 +181,12 @@ class TestParseReceipt(unittest.TestCase):
                         "name": "SB CDER VINEGAR",
                         "amount": Decimal("1.99"),
                         "code": " F",
+                        "type": "sum",
                     },
                 ],
             },
         )
-        for item in items:
-            if "GROCERY" == item["category"]:
-                del item["category"]
-                del item["taxable"]
-                del item["adjustments"]
+        simplify_matching_items(items, "GROCERY")
         self.assertEqual(
             items.pop(),
             {
@@ -213,20 +228,23 @@ class TestParseReceipt(unittest.TestCase):
                         "name": "BP HD MT FRANKS",
                         "amount": Decimal("4.49"),
                         "code": " F",
+                        "type": "sum",
                     },
                     {
                         "name": "BONUS BUY SAVINGS",
                         "amount": Decimal("1.99"),
                         "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("2.50"),
+                        "type": "verify",
                     },
                 ],
             },
         )
-        for item in items:
-            if "MEAT" == item["category"]:
-                del item["category"]
-                del item["taxable"]
-                del item["adjustments"]
+        simplify_matching_items(items, "MEAT")
         self.assertEqual(
             items.pop(),
             {
@@ -241,12 +259,155 @@ class TestParseReceipt(unittest.TestCase):
                 "price": Decimal("11.99"),
             },
         )
+        # PRODUCE
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "CARROTS 2LB",
+                "price": Decimal("1.99"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "CARROTS 2LB",
+                        "amount": Decimal("1.99"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                ],
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "LTLPT BMR GLD",
+                "price": Decimal("3.99"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "SW GARLIC 9.5Z",
+                "price": Decimal("3.99"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "SW SQ GINGER 10Z",
+                "price": Decimal("4.49"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "AUR GRANOLA 13Z",
+                "price": Decimal("5.99"),
+            },
+        )
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "1LB STRAWBERRY",
+                "price": Decimal("3.79"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "1LB STRAWBERRY",
+                        "amount": Decimal("4.99"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("1.20"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("3.79"),
+                        "type": "verify",
+                    },
+                ],
+            },
+        )
+        self.assertEqual(
+            items.pop(),
+            {
+                "name": "RED SEEDLESS GRA",
+                "price": Decimal("6.10"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "RED SEEDLESS GRA",
+                        "amount": Decimal("6.10"),
+                        "code": " F",
+                        "type": "sum",
+                        "weight_readout": "1.53 lb @ 3.99 /lb",
+                    },
+                ],
+            },
+        )
+        item = items.pop()
+        self.assertEqual(
+            item,
+            {
+                "name": "ASPARAGUS",
+                "price": Decimal("3.35"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "ASPARAGUS",
+                        "amount": Decimal("4.24"),
+                        "code": " F",
+                        "type": "sum",
+                        "weight_readout": "1.12 lb @ 3.79 /lb",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("0.89"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("3.35"),
+                        "type": "verify",
+                        "weight_readout": "1.12 lb @ 2.99 /lb",
+                        "weight_price": Decimal("3.35"),
+                    },
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        item = items.pop()
+        self.assertEqual(
+            item,
+            {
+                "name": "+LEMONS",
+                "price": Decimal("0.67"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "+LEMONS",
+                        "amount": Decimal("0.67"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
 
         # we should have verified them all
         self.assertEqual(len(items), 0)
 
         # FIXME finish
         # self.assertEqual(trans["warning"], [])
-        # import json
         # print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
         # self.assertEqual(trans["receipt_data"].get("skipped"), [])
