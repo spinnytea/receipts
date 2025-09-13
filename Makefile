@@ -5,6 +5,7 @@
 
 all: lint test_once run
 
+# python3 -m pip install isort ruff
 lint:
 	python3 -m isort .
 	python3 -m ruff format .
@@ -15,6 +16,7 @@ test_once:
 	python3 -m unittest
 	@echo
 
+# npm install -g nodemon
 test: lint
 	nodemon --watch app --watch raw --watch test --ext mbox,py --exec python3 -m unittest $(filter)
 

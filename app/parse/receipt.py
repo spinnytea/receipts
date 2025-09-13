@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 from typing import List
 
-CATEGORY_LINE = re.compile(r"(DAIRY)\s+")
+CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT)\s+")
 
 # Common receipt codes
 #  T: Taxable item.
@@ -29,6 +29,8 @@ def _parse_receipt_raw(trans):
     parser.feed(trans.pop("receipt_raw"))
     receipt_data = parser.data
 
+    if parser.warning:
+        trans.setdefault("warning", []).extend(parser.warning)
     if "store_number" not in receipt_data:
         trans.setdefault("warning", []).append(
             "Missing store number (never started parsing)"
@@ -44,8 +46,11 @@ def _parse_receipt_raw(trans):
 
 
 class ReceiptParser:
-    def feed(self, receipt_raw: List[str]):
+    def __init__(self):
         self.data = {"items": []}
+
+    def feed(self, receipt_raw: List[str]):
+        self.warning = []
         self.current_category = None
         self.parsing_groceries = False
         self.current_item = None
@@ -85,8 +90,9 @@ class ReceiptParser:
                     continue
                 self.current_category = None
             elif not self.current_category:
-                # raise Exception(f"we should have a category by this point -- {line}")
-                pass
+                self.warning.append(
+                    f"receipt should have a category by this point -- {line}"
+                )
             else:
                 match_itemized = ITEMIZED_LINE.match(line)
                 if match_itemized:
@@ -103,7 +109,7 @@ class ReceiptParser:
                     continue
 
                 match_savings = re.match(
-                    r"\s+(BONUS BUY SAVINGS)\s+(0.99)(-T|-F)", line
+                    r"\s+(BONUS BUY SAVINGS)\s+(\d+\.\d\d)(-T|-F)", line
                 )
                 if match_savings:
                     self._add_adjustment(match_savings.groups())
@@ -117,8 +123,9 @@ class ReceiptParser:
                         continue
                     else:
                         self.skip_rest = True
-                        # FIXME warning?
-                        # raise Exception(f"invalid price? {line} -- {self.current_item}")
+                        self.warning.append(
+                            f"invalid price? {line} -- {self.current_item}"
+                        )
 
             # FIXME finish other lines
 
@@ -129,16 +136,16 @@ class ReceiptParser:
 
     def _add_adjustment(self, match):
         if self.current_item is None:
-            raise Exception("not currently parsing anything")
+            self.warning.append("not currently parsing anything")
         if not match or len(match) != 3:
-            raise Exception("invalid match argument")
+            self.warning.append("invalid match argument")
 
         [name, cost, code] = match
         taxable = code in TAXABLE_CODES
         scale = -1 if code[0] == "-" else 1
 
         if taxable != self.current_item["taxable"]:
-            raise Exception(f"mismatch taxable: {match} -- {self.current_item}")
+            self.warning.append(f"mismatch taxable: {match} -- {self.current_item}")
 
         self.current_item["price"] += Decimal(cost) * scale
         self.current_item["adjustments"].append(
