@@ -17,11 +17,11 @@ def parse_body_html(transactions):
         if "body_html" in trans:
             if DEBUG:
                 print(f"parsing {trans['id']}")
-            __parse_body_html(trans)
+            _parse_body_html(trans)
     return transactions
 
 
-def __parse_body_html(trans):
+def _parse_body_html(trans):
     """
     Do the actual work.
     """

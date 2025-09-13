@@ -26,9 +26,11 @@ class TestParseHtml(unittest.TestCase):
         this is over testing
         not sure this really matters
         """
+        all_all_lens = set()
         for trans in self.transactions:
             for line in trans["receipt_raw"]:
-                self.assertEqual(len(line), 38)
+                all_all_lens.add(len(line))
+        self.assertEqual(all_all_lens, {38})
 
     def test_one(self):
         trans = self.one
