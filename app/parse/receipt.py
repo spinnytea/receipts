@@ -18,6 +18,7 @@ TAXABLE_CODES = [" T", "-T", "TF", " X"]
 ITEMIZED_LINE = re.compile(r"^W?T?\s+(.{16})\s*(\d+\.\d\d)( T|-T| F|-F)$")
 
 WEIGHT_LINE = re.compile(r"^ (\d+\.\d\d lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
+QUANTITY_LINE = re.compile(r"^ (\d+ @ \d+\.\d\d)\s+$")
 
 
 def parse_receipt_raw(transactions):
@@ -106,6 +107,7 @@ class ReceiptParser:
                         "category": self.current_category,
                         "taxable": code in TAXABLE_CODES,
                         "adjustments": [],
+                        # "lines": [], # TODO original lines
                     }
                     self._add_adjustment([name, cost, code])
                     self.data["items"].append(self.current_item)
@@ -130,7 +132,7 @@ class ReceiptParser:
                     self.current_item["adjustments"].append(
                         {
                             "name": text,
-                            "price": Decimal(cost),
+                            "price": price,
                             "type": "verify",
                         }
                     )
@@ -147,12 +149,40 @@ class ReceiptParser:
                             f"invalid price? {line} -- {self.current_item}"
                         )
 
+                match_verify = re.match(
+                    r"\s+(PRICE YOU PAY FOR)\s+(\d)\s+(\d+\.\d\d)\s+", line
+                )
+                if match_verify:
+                    [text, quantity, cost] = match_verify.groups()
+                    price = Decimal(cost)
+                    self.current_item["adjustments"].append(
+                        {
+                            "name": text,
+                            "price": price,
+                            "quantity": int(quantity),
+                            "type": "verify",
+                        }
+                    )
+
+                    if price == self.current_item["price"]:
+                        self.current_item = None
+                        continue
+                    else:
+                        self.skip_rest = True
+                        self.warning.append(
+                            f"invalid price? {line} -- {self.current_item}"
+                        )
+
                 match_weight = WEIGHT_LINE.match(line)
                 if match_weight:
                     self.current_weight = match_weight.groups()
                     continue
 
-            # FIXME finish other lines
+                match_quantity = QUANTITY_LINE.match(line)
+                if match_quantity:
+                    # happens immediately after
+                    self._add_quantity_readout(match_quantity)
+                    continue
 
             self.data.setdefault("skipped", []).append(line)
             self.skip_rest = True
@@ -172,11 +202,12 @@ class ReceiptParser:
         if taxable != self.current_item["taxable"]:
             self.warning.append(f"mismatch taxable: {match} -- {self.current_item}")
 
-        self.current_item["price"] += Decimal(cost) * scale
+        amount = Decimal(cost)
+        self.current_item["price"] += amount * scale
         self.current_item["adjustments"].append(
             {
                 "name": name.strip(),
-                "amount": Decimal(cost),
+                "amount": amount,
                 "code": code,
                 "type": "sum",
             }
@@ -223,3 +254,8 @@ class ReceiptParser:
         #         "type": "weight_readout",
         #     }
         # )
+
+    def _add_quantity_readout(self, match_quantity):
+        [quantity_readout] = match_quantity.groups()
+        last_adjustment = self.current_item["adjustments"][-1]
+        last_adjustment["quantity_readout"] = quantity_readout

@@ -63,7 +63,7 @@ class TestParseReceipt(unittest.TestCase):
         self.assertEqual(trans["receipt_data"]["store_number"], 55)
         items = trans["receipt_data"]["items"].copy()
         items.reverse()
-        self.assertEqual(len(items), 24)
+        self.assertEqual(len(items), 31)
         # DAIRY
         self.assertEqual(
             items.pop(),
@@ -398,16 +398,118 @@ class TestParseReceipt(unittest.TestCase):
                         "amount": Decimal("0.67"),
                         "code": " F",
                         "type": "sum",
+                        "quantity_readout": "4 @ 0.79",
                     },
                 ],
             },
             json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        item = items.pop()
+        self.assertEqual(
+            item,
+            {
+                "name": "KIWI",
+                "price": Decimal("2.00"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "KIWI",
+                        "amount": Decimal("3.16"),
+                        "code": " F",
+                        "type": "sum",
+                        "quantity_readout": "4 @ 0.29",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("1.16"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY FOR",
+                        "price": Decimal("2.00"),
+                        "quantity": 4,
+                        "type": "verify",
+                    },
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        item = items.pop()
+        self.assertEqual(
+            item,
+            {
+                "name": "SUMMER SQUASH",
+                "price": Decimal("1.41"),
+                "category": "PRODUCE",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "SUMMER SQUASH",
+                        "amount": Decimal("1.77"),
+                        "code": " F",
+                        "type": "sum",
+                        "weight_readout": "0.71 lb @ 2.49 /lb",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("0.36"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("1.41"),
+                        "type": "verify",
+                        "weight_readout": "0.71 lb @ 1.99 /lb",
+                        "weight_price": Decimal("1.41"),
+                    },
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "GARLIC",
+                "price": Decimal("0.69"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "LOOSE SHALLOTS",
+                "price": Decimal("0.52"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "IMPRTD RED PPPRS",
+                "price": Decimal("1.00"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "BROCCOLI CROWNS",
+                "price": Decimal("1.49"),
+            },
+        )
+        self.assertEqual(
+            simplify_one_item(items.pop()),
+            {
+                "name": "FRESH BANANAS",
+                "price": Decimal("1.45"),
+            },
         )
 
         # we should have verified them all
         self.assertEqual(len(items), 0)
 
         # FIXME finish
-        # self.assertEqual(trans["warning"], [])
-        # print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
+        # if trans.get("warning", []) and "(skipped)" in ".".join(trans.get("warning")):
+        #     print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
+        # self.assertEqual(trans.get("warning", []), [])
         # self.assertEqual(trans["receipt_data"].get("skipped"), [])
