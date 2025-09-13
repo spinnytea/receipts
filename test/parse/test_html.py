@@ -1,14 +1,14 @@
 import unittest
 
+from app.parse.html import parse_body_html
 from app.parse.mail import parse_mbox_file
-from app.parse.receipt import parse_html_body
 
 
-class TestParseReceipt(unittest.TestCase):
+class TestParseHtml(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         transactions = parse_mbox_file("raw/dumps/Purchase-Groceries.mbox")
-        parse_html_body(transactions)
+        parse_body_html(transactions)
 
         self.transactions = transactions
         self.one = transactions[39]

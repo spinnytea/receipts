@@ -3,7 +3,7 @@ from html.parser import HTMLParser
 DEBUG = False
 
 
-def parse_html_body(transactions):
+def parse_body_html(transactions):
     """
     Parses the html body from the email, … and produces something
 
@@ -17,11 +17,11 @@ def parse_html_body(transactions):
         if "body_html" in trans:
             if DEBUG:
                 print(f"parsing {trans['id']}")
-            __parse_html_body(trans)
+            __parse_body_html(trans)
     return transactions
 
 
-def __parse_html_body(trans):
+def __parse_body_html(trans):
     """
     Do the actual work.
     """
