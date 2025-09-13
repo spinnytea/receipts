@@ -107,7 +107,7 @@ class ReceiptParser:
                         "category": self.current_category,
                         "taxable": code in TAXABLE_CODES,
                         "adjustments": [],
-                        # "lines": [], # TODO original lines
+                        "lines": [line],
                     }
                     self._add_adjustment([name, cost, code])
                     self.data["items"].append(self.current_item)
@@ -121,8 +121,8 @@ class ReceiptParser:
                     r"\s+(BONUS BUY SAVINGS)\s+(\d+\.\d\d)(-T|-F)", line
                 )
                 if match_savings:
-                    # FIXME use weight readout
                     self._add_adjustment(match_savings.groups())
+                    self.current_item["lines"].append(line)
                     continue
 
                 match_verify = re.match(r"\s+(PRICE YOU PAY)\s+(\d+\.\d\d)\s+", line)
@@ -136,6 +136,7 @@ class ReceiptParser:
                             "type": "verify",
                         }
                     )
+                    self.current_item["lines"].append(line)
 
                     if self.current_weight:
                         self._add_weight_readout(shouldHaveCost=True)
@@ -163,6 +164,7 @@ class ReceiptParser:
                             "type": "verify",
                         }
                     )
+                    self.current_item["lines"].append(line)
 
                     if price == self.current_item["price"]:
                         self.current_item = None
@@ -175,13 +177,14 @@ class ReceiptParser:
 
                 match_weight = WEIGHT_LINE.match(line)
                 if match_weight:
-                    self.current_weight = match_weight.groups()
+                    self.current_weight = {"line": line, "match": match_weight.groups()}
                     continue
 
                 match_quantity = QUANTITY_LINE.match(line)
                 if match_quantity:
                     # happens immediately after
                     self._add_quantity_readout(match_quantity)
+                    self.current_item["lines"].append(line)
                     continue
 
             self.data.setdefault("skipped", []).append(line)
@@ -214,7 +217,10 @@ class ReceiptParser:
         )
 
     def _add_weight_readout(self, shouldHaveCost=False):
-        [weight_readout, _, cost] = self.current_weight
+        [weight_readout, _, cost] = self.current_weight["match"]
+        self.current_item["lines"].insert(
+            -2 if shouldHaveCost else -1, self.current_weight["line"]
+        )
         self.current_weight = None
         last_adjustment = self.current_item["adjustments"][-1]
         last_adjustment["weight_readout"] = weight_readout

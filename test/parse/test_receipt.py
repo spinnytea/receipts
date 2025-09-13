@@ -48,6 +48,7 @@ class TestParseReceipt(unittest.TestCase):
             del item["category"]
             del item["taxable"]
             del item["adjustments"]
+            del item["lines"]
             return item
 
         def simplify_matching_items(items, category):
@@ -65,8 +66,9 @@ class TestParseReceipt(unittest.TestCase):
         items.reverse()
         self.assertEqual(len(items), 31)
         # DAIRY
+        item = items.pop()
         self.assertEqual(
-            items.pop(),
+            item,
             {
                 "name": "PHIL CRM CHEES8Z",
                 "price": Decimal("3.00"),
@@ -91,7 +93,13 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "verify",
                     },
                 ],
+                "lines": [
+                    "        PHIL CRM CHEES8Z        3.99 F",
+                    "        BONUS BUY SAVINGS       0.99-F",
+                    "   PRICE YOU PAY           3.00       ",
+                ],
             },
+            json.dumps(item, default=datetime_serializer, indent=2),
         )
         self.assertEqual(
             items.pop(),
@@ -108,6 +116,7 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "sum",
                     },
                 ],
+                "lines": ["        BLACKCHRY 0% 4PK        5.99 F"],
             },
         )
         simplify_matching_items(items, "DAIRY")
@@ -140,8 +149,9 @@ class TestParseReceipt(unittest.TestCase):
             },
         )
         # GENERAL MERCHANDISE
+        item = items.pop()
         self.assertEqual(
-            items.pop(),
+            item,
             {
                 "name": "SL GARLIC PRESS",
                 "price": Decimal("7.73"),
@@ -166,7 +176,13 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "verify",
                     },
                 ],
+                "lines": [
+                    "        SL GARLIC PRESS         8.59 T",
+                    "        BONUS BUY SAVINGS       0.86-T",
+                    "   PRICE YOU PAY           7.73       ",
+                ],
             },
+            json.dumps(item, default=datetime_serializer, indent=2),
         )
         # GROCERY
         self.assertEqual(
@@ -184,6 +200,7 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "sum",
                     },
                 ],
+                "lines": ["        SB CDER VINEGAR         1.99 F"],
             },
         )
         simplify_matching_items(items, "GROCERY")
@@ -216,8 +233,9 @@ class TestParseReceipt(unittest.TestCase):
             },
         )
         # MEAT
+        item = items.pop()
         self.assertEqual(
-            items.pop(),
+            item,
             {
                 "name": "BP HD MT FRANKS",
                 "price": Decimal("2.50"),
@@ -242,7 +260,13 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "verify",
                     },
                 ],
+                "lines": [
+                    "        BP HD MT FRANKS         4.49 F",
+                    "        BONUS BUY SAVINGS       1.99-F",
+                    "   PRICE YOU PAY           2.50       ",
+                ],
             },
+            json.dumps(item, default=datetime_serializer, indent=2),
         )
         simplify_matching_items(items, "MEAT")
         self.assertEqual(
@@ -275,6 +299,7 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "sum",
                     },
                 ],
+                "lines": ["        CARROTS 2LB             1.99 F"],
             },
         )
         self.assertEqual(
@@ -305,8 +330,9 @@ class TestParseReceipt(unittest.TestCase):
                 "price": Decimal("5.99"),
             },
         )
+        item = items.pop()
         self.assertEqual(
-            items.pop(),
+            item,
             {
                 "name": "1LB STRAWBERRY",
                 "price": Decimal("3.79"),
@@ -331,7 +357,13 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "verify",
                     },
                 ],
+                "lines": [
+                    "        1LB STRAWBERRY          4.99 F",
+                    "        BONUS BUY SAVINGS       1.20-F",
+                    "   PRICE YOU PAY           3.79       ",
+                ],
             },
+            json.dumps(item, default=datetime_serializer, indent=2),
         )
         self.assertEqual(
             items.pop(),
@@ -348,6 +380,10 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "sum",
                         "weight_readout": "1.53 lb @ 3.99 /lb",
                     },
+                ],
+                "lines": [
+                    " 1.53 lb @ 3.99 /lb                   ",
+                    "WT      RED SEEDLESS GRA        6.10 F",
                 ],
             },
         )
@@ -381,6 +417,13 @@ class TestParseReceipt(unittest.TestCase):
                         "weight_price": Decimal("3.35"),
                     },
                 ],
+                "lines": [
+                    " 1.12 lb @ 3.79 /lb                   ",
+                    "WT      ASPARAGUS               4.24 F",
+                    " 1.12 lb @ 2.99 /lb = 3.35            ",
+                    "        BONUS BUY SAVINGS       0.89-F",
+                    "   PRICE YOU PAY           3.35       ",
+                ],
             },
             json.dumps(item, default=datetime_serializer, indent=2),
         )
@@ -400,6 +443,10 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "sum",
                         "quantity_readout": "4 @ 0.79",
                     },
+                ],
+                "lines": [
+                    "        +LEMONS                 0.67 F",
+                    " 4 @ 0.79                             ",
                 ],
             },
             json.dumps(item, default=datetime_serializer, indent=2),
@@ -433,6 +480,12 @@ class TestParseReceipt(unittest.TestCase):
                         "type": "verify",
                     },
                 ],
+                "lines": [
+                    "        KIWI                    3.16 F",
+                    " 4 @ 0.29                             ",
+                    "        BONUS BUY SAVINGS       1.16-F",
+                    "   PRICE YOU PAY FOR   4   2.00       ",
+                ],
             },
             json.dumps(item, default=datetime_serializer, indent=2),
         )
@@ -465,6 +518,13 @@ class TestParseReceipt(unittest.TestCase):
                         "weight_readout": "0.71 lb @ 1.99 /lb",
                         "weight_price": Decimal("1.41"),
                     },
+                ],
+                "lines": [
+                    " 0.71 lb @ 2.49 /lb                   ",
+                    "WT      SUMMER SQUASH           1.77 F",
+                    " 0.71 lb @ 1.99 /lb = 1.41            ",
+                    "        BONUS BUY SAVINGS       0.36-F",
+                    "   PRICE YOU PAY           1.41       ",
                 ],
             },
             json.dumps(item, default=datetime_serializer, indent=2),
