@@ -11,7 +11,7 @@ def eml_to_stats(mbox_filepath):
     transactions = parse_mbox_file(mbox_filepath)
     parse_date_raw(transactions)
     parse_body_html(transactions)
-    # TODO output all receipt_raw file
+    save_json("raw/receipt_raw.json", transactions)
     parse_receipt_raw(transactions)
 
     print(f"parse {len(transactions)} messages")
@@ -19,6 +19,9 @@ def eml_to_stats(mbox_filepath):
 
     # TODO stats
 
+def save_json(filepath, data):
+    with open(filepath, "w") as file:
+        file.write(json.dumps(data, indent=2, default=datetime_serializer))
 
 if __name__ == "__main__":
     mbox_filepath = sys.argv[1]

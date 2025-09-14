@@ -5,7 +5,7 @@ from decimal import Decimal
 from app.parse.date import datetime_serializer
 from app.parse.html import parse_body_html
 from app.parse.mail import parse_mbox_file
-from app.parse.receipt import _parse_receipt_raw, parse_receipt_raw
+from app.parse.receipt import ReceiptParser, _parse_receipt_raw, parse_receipt_raw
 
 
 class TestParseReceipt(unittest.TestCase):
@@ -31,6 +31,87 @@ class TestParseReceipt(unittest.TestCase):
                 ["date_raw", "id", "idx", "receipt_data"],
                 f"bad keys for transaction {trans['id']}",
             )
+
+    def test_item_simple(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "DAIRY                                 ",
+                "        BLACKCHRY 0% 4PK        5.99 F",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "BLACKCHRY 0% 4PK",
+                "price": Decimal("5.99"),
+                "category": "DAIRY",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "BLACKCHRY 0% 4PK",
+                        "amount": Decimal("5.99"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                ],
+                "lines": ["        BLACKCHRY 0% 4PK        5.99 F"],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
+    def test_item_savings(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "DAIRY                                 ",
+                "        PHIL CRM CHEES8Z        3.99 F",
+                "        BONUS BUY SAVINGS       0.99-F",
+                "   PRICE YOU PAY           3.00       ",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "PHIL CRM CHEES8Z",
+                "price": Decimal("3.00"),
+                "category": "DAIRY",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "PHIL CRM CHEES8Z",
+                        "amount": Decimal("3.99"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("0.99"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("3.00"),
+                        "type": "verify",
+                    },
+                ],
+                "lines": [
+                    "        PHIL CRM CHEES8Z        3.99 F",
+                    "        BONUS BUY SAVINGS       0.99-F",
+                    "   PRICE YOU PAY           3.00       ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
 
     def test_loaded_sample(self):
         self.assertEqual(len(self.receipt_raw_sample), 127)

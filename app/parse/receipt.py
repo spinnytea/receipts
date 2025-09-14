@@ -33,7 +33,7 @@ CATEGORY_LINE = re.compile(r"(" + "|".join(CATEGORIES) + r")\s+")
 #  N: Non-taxable item, used by some retailers instead of a code like "F" or "E".
 #  Q: Qualified health care item for HSA (healthcare spending account) (triple tax-free)
 #  B: (various) SNAP-eligible and taxed
-TAXABLE_CODES = [" T", "-T", "TF", " X", " B"]
+TAXABLE_CODES = [" T", "-T", "TF", " X", "-X", " B", "-B"]
 ITEMIZED_LINE = re.compile(
     r"^(WT|  )\s{6}(.{16})\s*(\d+\.\d\d)( T|-T| F|-F| X| Q| B|-B)$"
 )
@@ -122,6 +122,7 @@ class ReceiptParser:
             if "store_number" not in self.data:
                 # throw out all the lines before the store number
                 # (the next line starts the produce)
+                # TODO parse date on receipt
                 x = re.match("^Store #(\d+)", line)
                 if x:
                     self.data["store_number"] = int(x.group(1))
@@ -282,6 +283,7 @@ class ReceiptParser:
         taxable = code in TAXABLE_CODES
         scale = -1 if code[0] == "-" else 1
 
+        # XXX maybe it should just be "tax_code !== self.current_item["tax_code"]"
         if taxable != self.current_item["taxable"]:
             self.warning.append(f"mismatch taxable: {match} -- {self.current_item}")
 
