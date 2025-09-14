@@ -113,6 +113,7 @@ class ReceiptParser:
         self.current_item = None
         self.skip_rest = False
         self.current_weight = None
+        self.current_quantity = None
 
         for line in receipt_raw:
             if line.isspace():
@@ -195,6 +196,8 @@ class ReceiptParser:
 
                     if self.current_weight and line.startswith("WT"):
                         self._add_weight_readout(shouldHaveCost=False)
+                    if self.current_quantity:
+                        self._add_quantity_readout()
 
                     continue
 
@@ -204,11 +207,19 @@ class ReceiptParser:
                 if match_savings:
                     self._add_adjustment(match_savings.groups())
                     self.current_item["lines"].append(line)
+
+                    if self.current_quantity:
+                        self._add_quantity_readout()
+
                     continue
 
-                match_verify = re.match(r"\s+(PRICE YOU PAY)\s+(\d+\.\d\d)\s+", line)
+                match_verify = re.match(
+                    r"\s+(PRICE YOU PAY)\s+(\d+\.\d\d|FREE)\s+", line
+                )
                 if match_verify:
                     [text, cost] = match_verify.groups()
+                    if cost == "FREE":
+                        cost = "0"
                     price = Decimal(cost)
                     self.current_item["adjustments"].append(
                         {
@@ -263,9 +274,10 @@ class ReceiptParser:
 
                 match_quantity = QUANTITY_LINE.match(line)
                 if match_quantity:
-                    # happens immediately after
-                    self._add_quantity_readout(match_quantity)
-                    self.current_item["lines"].append(line)
+                    self.current_quantity = {
+                        "line": line,
+                        "match": match_quantity.groups(),
+                    }
                     continue
 
             self.data.setdefault("skipped", []).append(line)
@@ -343,7 +355,22 @@ class ReceiptParser:
         #     }
         # )
 
-    def _add_quantity_readout(self, match_quantity):
-        [quantity_readout] = match_quantity.groups()
+    def _add_quantity_readout(self):
+        [quantity_readout] = self.current_quantity["match"]
+        self.current_item["lines"].insert(-1, self.current_quantity["line"])
+        self.current_quantity = None
         last_adjustment = self.current_item["adjustments"][-1]
         last_adjustment["quantity_readout"] = quantity_readout
+
+        match_breakdown = re.match(r"^(\d+) @ (\d+\.\d\d)", quantity_readout)
+        if not match_breakdown:
+            self.warning.append(
+                f"could not break down quantity_readout {quantity_readout} -- {self.current_item}"
+            )
+        else:
+            [count, cost] = match_breakdown.groups()
+            amount = int(count) * Decimal(cost)
+            if amount != last_adjustment["amount"]:
+                self.warning.append(
+                    f"quantity_readout does not match actual amount? {quantity_readout} {last_adjustment} -- {self.current_item}"
+                )

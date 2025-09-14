@@ -19,9 +19,11 @@ def eml_to_stats(mbox_filepath):
 
     # TODO stats
 
+
 def save_json(filepath, data):
     with open(filepath, "w") as file:
         file.write(json.dumps(data, indent=2, default=datetime_serializer))
+
 
 if __name__ == "__main__":
     mbox_filepath = sys.argv[1]

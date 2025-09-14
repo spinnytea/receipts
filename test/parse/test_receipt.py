@@ -113,6 +113,78 @@ class TestParseReceipt(unittest.TestCase):
             json.dumps(item, default=datetime_serializer, indent=2),
         )
 
+    def test_item_bogo(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "BAKERY - COMMERCIAL                   ",
+                "        THMS EM ORIG 13Z        5.29 F",
+                "        BONUS BUY SAVINGS       5.29-F",
+                "   PRICE YOU PAY           FREE       ",
+                "        THOM EMFN 6CT12Z        5.29 F",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 2)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "THMS EM ORIG 13Z",
+                "price": Decimal("0.00"),
+                "category": "BAKERY - COMMERCIAL",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "THMS EM ORIG 13Z",
+                        "amount": Decimal("5.29"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("5.29"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("0.00"),
+                        "type": "verify",
+                    },
+                ],
+                "lines": [
+                    "        THMS EM ORIG 13Z        5.29 F",
+                    "        BONUS BUY SAVINGS       5.29-F",
+                    "   PRICE YOU PAY           FREE       ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        item = items[1]
+        self.assertEqual(
+            item,
+            {
+                "name": "THOM EMFN 6CT12Z",
+                "price": Decimal("5.29"),
+                "category": "BAKERY - COMMERCIAL",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "THOM EMFN 6CT12Z",
+                        "amount": Decimal("5.29"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                ],
+                "lines": [
+                    "        THOM EMFN 6CT12Z        5.29 F",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
     def test_loaded_sample(self):
         self.assertEqual(len(self.receipt_raw_sample), 127)
 
@@ -525,12 +597,10 @@ class TestParseReceipt(unittest.TestCase):
                         "amount": Decimal("0.67"),
                         "code": " F",
                         "type": "sum",
-                        "quantity_readout": "4 @ 0.79",
                     },
                 ],
                 "lines": [
                     "        +LEMONS                 0.67 F",
-                    " 4 @ 0.79                             ",
                 ],
             },
             json.dumps(item, default=datetime_serializer, indent=2),
@@ -549,13 +619,14 @@ class TestParseReceipt(unittest.TestCase):
                         "amount": Decimal("3.16"),
                         "code": " F",
                         "type": "sum",
-                        "quantity_readout": "4 @ 0.29",
+                        "quantity_readout": "4 @ 0.79",
                     },
                     {
                         "name": "BONUS BUY SAVINGS",
                         "amount": Decimal("1.16"),
                         "code": "-F",
                         "type": "sum",
+                        "quantity_readout": "4 @ 0.29",
                     },
                     {
                         "name": "PRICE YOU PAY FOR",
@@ -565,6 +636,7 @@ class TestParseReceipt(unittest.TestCase):
                     },
                 ],
                 "lines": [
+                    " 4 @ 0.79                             ",
                     "        KIWI                    3.16 F",
                     " 4 @ 0.29                             ",
                     "        BONUS BUY SAVINGS       1.16-F",
