@@ -2,7 +2,24 @@ import re
 from decimal import ROUND_UP, Decimal
 from typing import List
 
-CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT|PRODUCE)\s+")
+# XXX should categories be automatic?
+CATEGORIES = [
+    "Age Restricted: \d+",
+    "BAKE SHOP",
+    "BAKERY - COMMERCIAL",
+    "CHEESE SHOP",
+    "DAIRY",
+    "DELI",
+    "FROZEN FOOD",
+    "GENERAL MERCHANDISE",
+    "GROCERY",
+    "HEALTH AND BEAUTY CARE",
+    "MEAT",
+    "PHARMACY",
+    "PREPARED FOODS",
+    "PRODUCE",
+]
+CATEGORY_LINE = re.compile(r"(" + "|".join(CATEGORIES) + r")\s+")
 
 # Common receipt codes
 #  T: Taxable item.
@@ -14,10 +31,14 @@ CATEGORY_LINE = re.compile(r"(DAIRY|GENERAL MERCHANDISE|GROCERY|MEAT|PRODUCE)\s+
 #  E: Exempt from sales tax.
 #  X: Taxable item, used by some retailers instead of "T".
 #  N: Non-taxable item, used by some retailers instead of a code like "F" or "E".
-TAXABLE_CODES = [" T", "-T", "TF", " X"]
-ITEMIZED_LINE = re.compile(r"^W?T?\s+(.{16})\s*(\d+\.\d\d)( T|-T| F|-F)$")
+#  Q: Qualified health care item for HSA (healthcare spending account) (triple tax-free)
+#  B: (various) SNAP-eligible and taxed
+TAXABLE_CODES = [" T", "-T", "TF", " X", " B"]
+ITEMIZED_LINE = re.compile(
+    r"^(WT|  )\s{6}(.{16})\s*(\d+\.\d\d)( T|-T| F|-F| X| Q| B|-B)$"
+)
 
-WEIGHT_LINE = re.compile(r"^ (\d+\.\d\d lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
+WEIGHT_LINE = re.compile(r"^ (\d*\.\d+ lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
 QUANTITY_LINE = re.compile(r"^ (\d+ @ \d+\.\d\d)\s+$")
 
 # XXX never ever ever hard code the tax rate, set it as an env var or something
@@ -52,30 +73,31 @@ def _parse_receipt_raw(trans):
             "Some of the receipt lines have not been accouned for (skipped)"
         )
 
-    if "tax" in receipt_data:
-        sum = Decimal(0)
-        for item in receipt_data["items"]:
-            if item.get("taxable", False):
-                sum += item["price"]
-        if not sum or sum == Decimal(0):
-            trans.setdefault("warning", []).append("tax but no taxable items?")
-        if not SKIP_TAX_CHECK and receipt_data["tax"] != APPLY_TAX_RATE(sum):
-            trans.setdefault("warning", []).append(
-                f"what is this tax amount? (tax) {receipt_data['tax']} != (sum) {sum} * (rate) {Decimal('0.06')} == (calc) {APPLY_TAX_RATE(sum)}"
-            )
-
-    if "balance" in receipt_data:
-        sum = Decimal(0)
-        for item in receipt_data["items"]:
-            sum += item["price"]
+    if not parser.skip_rest:
         if "tax" in receipt_data:
-            sum += receipt_data["tax"]
-        if sum != receipt_data["balance"]:
-            trans.setdefault("warning", []).append(
-                f"balance mismatch? (listed) {receipt_data['balance']} != (sum) {sum}"
-            )
-    else:
-        trans.setdefault("warning", []).append("receipt has no balance")
+            sum = Decimal(0)
+            for item in receipt_data["items"]:
+                if item.get("taxable", False):
+                    sum += item["price"]
+            if not sum or sum == Decimal(0):
+                trans.setdefault("warning", []).append("tax but no taxable items?")
+            if not SKIP_TAX_CHECK and receipt_data["tax"] != APPLY_TAX_RATE(sum):
+                trans.setdefault("warning", []).append(
+                    f"what is this tax amount? (tax) {receipt_data['tax']} != (sum) {sum} * (rate) {Decimal('0.06')} == (calc) {APPLY_TAX_RATE(sum)}"
+                )
+
+        if "balance" in receipt_data:
+            sum = Decimal(0)
+            for item in receipt_data["items"]:
+                sum += item["price"]
+            if "tax" in receipt_data:
+                sum += receipt_data["tax"]
+            if sum != receipt_data["balance"]:
+                trans.setdefault("warning", []).append(
+                    f"balance mismatch? (listed) {receipt_data['balance']} != (sum) {sum}"
+                )
+        else:
+            trans.setdefault("warning", []).append("receipt has no balance")
 
     trans["receipt_data"] = receipt_data
 
@@ -158,7 +180,7 @@ class ReceiptParser:
             else:
                 match_itemized = ITEMIZED_LINE.match(line)
                 if match_itemized:
-                    [name, cost, code] = match_itemized.groups()
+                    [wt, name, cost, code] = match_itemized.groups()
                     self.current_item = {
                         "name": name.strip(),
                         "price": Decimal(0),

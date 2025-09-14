@@ -11,6 +11,7 @@ def eml_to_stats(mbox_filepath):
     transactions = parse_mbox_file(mbox_filepath)
     parse_date_raw(transactions)
     parse_body_html(transactions)
+    # TODO output all receipt_raw file
     parse_receipt_raw(transactions)
 
     print(f"parse {len(transactions)} messages")
