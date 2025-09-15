@@ -1,5 +1,6 @@
 # make all
 # make test filter=test.parse.test_receipt
+# make test filter=test.parse.test_receipt.TestParseReceiptUnits
 
 .PHONY: lint test test_once run all
 

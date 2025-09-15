@@ -15,12 +15,6 @@ class TestParseReceipt(unittest.TestCase):
         parse_body_html(self.transactions)
         parse_receipt_raw(self.transactions)
 
-        with open("raw/receipt_raw_sample.txt", "r", encoding="utf-8") as file:
-            self.receipt_raw_sample = file.read()
-        self.receipt_raw_sample = [
-            line.strip('"') for line in self.receipt_raw_sample.splitlines()
-        ]
-
     def test_all_keys(self):
         for trans in self.transactions:
             keys = sorted(trans.keys())
@@ -32,6 +26,8 @@ class TestParseReceipt(unittest.TestCase):
                 f"bad keys for transaction {trans['id']}",
             )
 
+
+class TestParseReceiptUnits(unittest.TestCase):
     def test_item_simple(self):
         parser = ReceiptParser()
         parser.feed(
@@ -65,6 +61,55 @@ class TestParseReceipt(unittest.TestCase):
         )
 
     def test_item_savings(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "DAIRY                                 ",
+                "        CHBNI 0% KEY LM         1.59 F",
+                "        SAVINGS                 0.59-F",
+                "   PRICE YOU PAY           1.00       ",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "CHBNI 0% KEY LM",
+                "price": Decimal("1.00"),
+                "category": "DAIRY",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "CHBNI 0% KEY LM",
+                        "amount": Decimal("1.59"),
+                        "code": " F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "SAVINGS",
+                        "amount": Decimal("0.59"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("1.00"),
+                        "type": "verify",
+                    },
+                ],
+                "lines": [
+                    "        CHBNI 0% KEY LM         1.59 F",
+                    "        SAVINGS                 0.59-F",
+                    "   PRICE YOU PAY           1.00       ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
+    def test_item_savings_bonus(self):
         parser = ReceiptParser()
         parser.feed(
             [
@@ -184,6 +229,129 @@ class TestParseReceipt(unittest.TestCase):
             },
             json.dumps(item, default=datetime_serializer, indent=2),
         )
+
+    def test_item_store_credit(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #155      04/07/25      06:16pm ",
+                "BAKE SHOP                             ",
+                " 6 @ 0.89                             ",
+                "        ROLL                    5.34 F",
+                "SC      BMSM BAGEL ROLL 6       0.14-F",
+                "SC      BMSM BAGEL ROLL 6       0.14-F",
+                "SC      BMSM BAGEL ROLL 6       0.14-F",
+                "SC      BMSM BAGEL ROLL 6       0.14-F",
+                "SC      BMSM BAGEL ROLL 6       0.14-F",
+                "SC      BMSM BAGEL ROLL 6       0.14-F",
+                "SC      BMSM BAGEL ROLL 6       0.01-F",
+                "   PRICE YOU PAY FOR   6   4.49       ",
+                "**************************************",
+            ]
+        )
+        self.assertEqual(parser.warning, [], "warning")
+        self.assertEqual(parser.current_category, None, "current_category")
+        self.assertEqual(parser.parsing_groceries, False, "parsing_groceries")
+        self.assertEqual(parser.current_item, None, "current_item")
+        self.assertEqual(parser.skip_rest, False, "skip_rest")
+        self.assertEqual(parser.current_weight, None, "current_weight")
+        self.assertEqual(parser.current_quantity, None, "current_quantity")
+
+        items = parser.data["items"]
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(len(item["adjustments"]), 9)
+        self.assertEqual(
+            item,
+            {
+                "name": "ROLL",
+                "price": Decimal("4.49"),
+                "category": "BAKE SHOP",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "ROLL",
+                        "amount": Decimal("5.34"),
+                        "code": " F",
+                        "type": "sum",
+                        "quantity_readout": "6 @ 0.89",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.14"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.14"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.14"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.14"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.14"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.14"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BMSM BAGEL ROLL 6",
+                        "amount": Decimal("0.01"),
+                        "code": "-F",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY FOR",
+                        "price": Decimal("4.49"),
+                        "quantity": 6,
+                        "type": "verify",
+                    },
+                ],
+                "lines": [
+                    " 6 @ 0.89                             ",
+                    "        ROLL                    5.34 F",
+                    "SC      BMSM BAGEL ROLL 6       0.14-F",
+                    "SC      BMSM BAGEL ROLL 6       0.14-F",
+                    "SC      BMSM BAGEL ROLL 6       0.14-F",
+                    "SC      BMSM BAGEL ROLL 6       0.14-F",
+                    "SC      BMSM BAGEL ROLL 6       0.14-F",
+                    "SC      BMSM BAGEL ROLL 6       0.14-F",
+                    "SC      BMSM BAGEL ROLL 6       0.01-F",
+                    "   PRICE YOU PAY FOR   6   4.49       ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        self.assertEqual(parser.warning, [])
+        self.assertNotIn("skipped", parser.data)
+
+
+class TestParseReceiptRawSample(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        with open("raw/receipt_raw_sample.txt", "r", encoding="utf-8") as file:
+            self.receipt_raw_sample = file.read()
+        self.receipt_raw_sample = [
+            line.strip('"') for line in self.receipt_raw_sample.splitlines()
+        ]
 
     def test_loaded_sample(self):
         self.assertEqual(len(self.receipt_raw_sample), 127)

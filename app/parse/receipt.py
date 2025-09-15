@@ -37,6 +37,7 @@ TAXABLE_CODES = [" T", "-T", "TF", " X", "-X", " B", "-B"]
 ITEMIZED_LINE = re.compile(
     r"^(WT|  )\s{6}(.{16})\s*(\d+\.\d\d)( T|-T| F|-F| X| Q| B|-B)$"
 )
+CREDIT_LINE = re.compile(r"^(SC)\s{6}(.{20})\s*(\d+\.\d\d)( F|-F)")
 
 WEIGHT_LINE = re.compile(r"^ (\d*\.\d+ lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
 QUANTITY_LINE = re.compile(r"^ (\d+ @ \d+\.\d\d)\s+$")
@@ -74,7 +75,7 @@ def _parse_receipt_raw(trans):
         )
 
     if not parser.skip_rest:
-        if "tax" in receipt_data:
+        if "tax" in receipt_data and receipt_data["tax"] > Decimal("0"):
             sum = Decimal(0)
             for item in receipt_data["items"]:
                 if item.get("taxable", False):
@@ -132,6 +133,8 @@ class ReceiptParser:
 
             if set(line) == {"*"}:
                 # if line all stars, then we are done
+                self.current_item = None
+                self.current_category = None
                 self.parsing_groceries = False
 
             match_tax = re.match(r"^\s+TAX\s+(\d+\.\d\d)  $", line)
@@ -169,7 +172,11 @@ class ReceiptParser:
                 self.data.setdefault("skipped", []).append(line)
                 continue
 
-            if not line.startswith(" ") and not line.startswith("WT "):
+            if (
+                not line.startswith(" ")
+                and not line.startswith("WT ")
+                and not line.startswith("SC ")
+            ):
                 match_category = CATEGORY_LINE.match(line)
                 if match_category:
                     self.current_category = match_category.group(1)
@@ -180,6 +187,18 @@ class ReceiptParser:
                     f"receipt should have a category by this point -- {line}"
                 )
             else:
+                match_savings = re.match(
+                    r"\s+((BONUS BUY )?SAVINGS)\s+(\d+\.\d\d)(-T|-F)", line
+                )
+                if match_savings:
+                    [name, _, cost, code] = match_savings.groups()
+                    self._add_adjustment([name, cost, code], line)
+
+                    if self.current_quantity:
+                        self._add_quantity_readout()
+
+                    continue
+
                 match_itemized = ITEMIZED_LINE.match(line)
                 if match_itemized:
                     [wt, name, cost, code] = match_itemized.groups()
@@ -189,9 +208,9 @@ class ReceiptParser:
                         "category": self.current_category,
                         "taxable": code in TAXABLE_CODES,
                         "adjustments": [],
-                        "lines": [line],
+                        "lines": [],
                     }
-                    self._add_adjustment([name, cost, code])
+                    self._add_adjustment([name, cost, code], line)
                     self.data["items"].append(self.current_item)
 
                     if self.current_weight and line.startswith("WT"):
@@ -201,16 +220,10 @@ class ReceiptParser:
 
                     continue
 
-                match_savings = re.match(
-                    r"\s+(BONUS BUY SAVINGS)\s+(\d+\.\d\d)(-T|-F)", line
-                )
-                if match_savings:
-                    self._add_adjustment(match_savings.groups())
-                    self.current_item["lines"].append(line)
-
-                    if self.current_quantity:
-                        self._add_quantity_readout()
-
+                match_credit = CREDIT_LINE.match(line)
+                if match_credit:
+                    [sc, name, cost, code] = match_credit.groups()
+                    self._add_adjustment([name, cost, code], line)
                     continue
 
                 match_verify = re.match(
@@ -282,10 +295,11 @@ class ReceiptParser:
 
             self.data.setdefault("skipped", []).append(line)
             self.skip_rest = True
+            self.warning.append(f"skipped first, skip rest -- {line}")
 
         self.current_item = None
 
-    def _add_adjustment(self, match):
+    def _add_adjustment(self, match, line):
         if self.current_item is None:
             self.warning.append("not currently parsing anything")
         if not match or len(match) != 3:
@@ -309,6 +323,8 @@ class ReceiptParser:
                 "type": "sum",
             }
         )
+
+        self.current_item["lines"].append(line)
 
     def _add_weight_readout(self, shouldHaveCost=False):
         [weight_readout, _, cost] = self.current_weight["match"]

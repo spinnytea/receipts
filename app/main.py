@@ -15,8 +15,15 @@ def eml_to_stats(mbox_filepath):
     parse_receipt_raw(transactions)
 
     print(f"parse {len(transactions)} messages")
+    warning_count = sum("skipped" in trans["receipt_data"] for trans in transactions)
+    if warning_count:
+        print(f"still have {warning_count} transactions with skipped lines")
+    warning_count = sum("warning" in trans for trans in transactions)
+    if warning_count:
+        print(f"still have {warning_count} messages with warnings")
     print(f"{json.dumps(transactions, indent=2, default=datetime_serializer)}")
 
+    # TODO keep adding test cases until there are not skipped
     # TODO stats
 
 
