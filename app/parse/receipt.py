@@ -8,6 +8,7 @@ CATEGORIES = [
     "BAKE SHOP",
     "BAKERY - COMMERCIAL",
     "CHEESE SHOP",
+    "CONVENIENCE ITEMS",
     "DAIRY",
     "DELI",
     "FROZEN FOOD",
@@ -36,7 +37,7 @@ CATEGORY_LINE = re.compile(r"(" + "|".join(CATEGORIES) + r")\s+")
 TAXABLE_CODES = [" T", "-T", "TF", " X", "-X", " B", "-B"]
 TAX_CODE_GROUP = r"( T|-T| F|-F| X| Q|- |  | B|-B)"
 ITEMIZED_LINE = re.compile(
-    r"^(WT|  )\s{6}(.{16})\s*(\d+\.\d\d)" + TAX_CODE_GROUP + r"$"
+    r"^(WT|MR|  )\s{6}(.{20})\s+(\d+\.\d\d)" + TAX_CODE_GROUP + r"$"
 )
 CREDIT_LINE = re.compile(r"^(SC)\s{6}(.{20})\s*(\d+\.\d\d)( F|-F)")
 
@@ -176,6 +177,7 @@ class ReceiptParser:
             if (
                 not line.startswith(" ")
                 and not line.startswith("WT ")
+                and not line.startswith("MR ")
                 and not line.startswith("SC ")
             ):
                 match_category = CATEGORY_LINE.match(line)

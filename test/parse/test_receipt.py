@@ -438,6 +438,77 @@ class TestParseReceiptUnits(unittest.TestCase):
         self.assertEqual(parser.warning, [])
         self.assertNotIn("skipped", parser.data)
 
+    def test_item_bags(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "CONVENIENCE ITEMS                     ",
+                " 3 @ 0.05                             ",
+                "MR      BAG CHARGE        NP    0.15  ",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "BAG CHARGE        NP",
+                "price": Decimal("0.15"),
+                "category": "CONVENIENCE ITEMS",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "BAG CHARGE        NP",
+                        "amount": Decimal("0.15"),
+                        "code": "  ",
+                        "type": "sum",
+                        "quantity_readout": "3 @ 0.05",
+                    },
+                ],
+                "lines": [
+                    " 3 @ 0.05                             ",
+                    "MR      BAG CHARGE        NP    0.15  ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
+    def test_item_donation(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "CONVENIENCE ITEMS                     ",
+                "MR      DONATION RND  UP  NP    0.50  ",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 1)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "DONATION RND  UP  NP",
+                "price": Decimal("0.50"),
+                "category": "CONVENIENCE ITEMS",
+                "taxable": False,
+                "adjustments": [
+                    {
+                        "name": "DONATION RND  UP  NP",
+                        "amount": Decimal("0.50"),
+                        "code": "  ",
+                        "type": "sum",
+                    },
+                ],
+                "lines": [
+                    "MR      DONATION RND  UP  NP    0.50  ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
 
 class TestParseReceiptRawSample(unittest.TestCase):
     @classmethod
