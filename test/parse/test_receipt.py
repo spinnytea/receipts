@@ -230,6 +230,101 @@ class TestParseReceiptUnits(unittest.TestCase):
             json.dumps(item, default=datetime_serializer, indent=2),
         )
 
+    def test_item_btgo(self):
+        parser = ReceiptParser()
+        parser.feed(
+            [
+                "Store #00                             ",
+                "GROCERY                               ",
+                "        MNSTR UFRED 16Z         3.49 B",
+                "        BONUS BUY SAVINGS       3.49-B",
+                "   PRICE YOU PAY           FREE       ",
+                "        MNSTR ENRGY DRNK        3.49 B",
+                "        MNSTR LO CARB DK        3.49 B",
+            ]
+        )
+        items = parser.data["items"]
+        self.assertEqual(len(items), 3)
+        item = items[0]
+        self.assertEqual(
+            item,
+            {
+                "name": "MNSTR UFRED 16Z",
+                "price": Decimal("0.00"),
+                "category": "GROCERY",
+                "taxable": True,
+                "adjustments": [
+                    {
+                        "name": "MNSTR UFRED 16Z",
+                        "amount": Decimal("3.49"),
+                        "code": " B",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "BONUS BUY SAVINGS",
+                        "amount": Decimal("3.49"),
+                        "code": "-B",
+                        "type": "sum",
+                    },
+                    {
+                        "name": "PRICE YOU PAY",
+                        "price": Decimal("0.00"),
+                        "type": "verify",
+                    },
+                ],
+                "lines": [
+                    "        MNSTR UFRED 16Z         3.49 B",
+                    "        BONUS BUY SAVINGS       3.49-B",
+                    "   PRICE YOU PAY           FREE       ",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        item = items[1]
+        self.assertEqual(
+            item,
+            {
+                "name": "MNSTR ENRGY DRNK",
+                "price": Decimal("3.49"),
+                "category": "GROCERY",
+                "taxable": True,
+                "adjustments": [
+                    {
+                        "name": "MNSTR ENRGY DRNK",
+                        "amount": Decimal("3.49"),
+                        "code": " B",
+                        "type": "sum",
+                    },
+                ],
+                "lines": [
+                    "        MNSTR ENRGY DRNK        3.49 B",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+        item = items[2]
+        self.assertEqual(
+            item,
+            {
+                "name": "MNSTR LO CARB DK",
+                "price": Decimal("3.49"),
+                "category": "GROCERY",
+                "taxable": True,
+                "adjustments": [
+                    {
+                        "name": "MNSTR LO CARB DK",
+                        "amount": Decimal("3.49"),
+                        "code": " B",
+                        "type": "sum",
+                    },
+                ],
+                "lines": [
+                    "        MNSTR LO CARB DK        3.49 B",
+                ],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
     def test_item_store_credit(self):
         parser = ReceiptParser()
         parser.feed(

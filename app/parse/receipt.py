@@ -34,8 +34,9 @@ CATEGORY_LINE = re.compile(r"(" + "|".join(CATEGORIES) + r")\s+")
 #  Q: Qualified health care item for HSA (healthcare spending account) (triple tax-free)
 #  B: (various) SNAP-eligible and taxed
 TAXABLE_CODES = [" T", "-T", "TF", " X", "-X", " B", "-B"]
+TAX_CODE_GROUP = r"( T|-T| F|-F| X| Q|- |  | B|-B)"
 ITEMIZED_LINE = re.compile(
-    r"^(WT|  )\s{6}(.{16})\s*(\d+\.\d\d)( T|-T| F|-F| X| Q| B|-B)$"
+    r"^(WT|  )\s{6}(.{16})\s*(\d+\.\d\d)" + TAX_CODE_GROUP + r"$"
 )
 CREDIT_LINE = re.compile(r"^(SC)\s{6}(.{20})\s*(\d+\.\d\d)( F|-F)")
 
@@ -188,7 +189,8 @@ class ReceiptParser:
                 )
             else:
                 match_savings = re.match(
-                    r"\s+((BONUS BUY )?SAVINGS)\s+(\d+\.\d\d)(-T|-F)", line
+                    r"\s+((BONUS BUY )?SAVINGS)\s+(\d+\.\d\d)" + TAX_CODE_GROUP + r"$",
+                    line,
                 )
                 if match_savings:
                     [name, _, cost, code] = match_savings.groups()
