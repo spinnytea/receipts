@@ -23,6 +23,12 @@ def eml_to_stats(mbox_filepath):
         print(f"still have {warning_count} messages with warnings")
     print(f"{json.dumps(transactions, indent=2, default=datetime_serializer)}")
 
+    # TODO load .eml
+    # TODO load every file in folder
+    # TODO de-dup (by date?)
+    # TODO parse date on reciept (store day time, day time 111 222 33 000000)
+    # TODO TOTAL NUMBER OF ITEMS SOLD
+
     # TODO keep adding test cases until there are not skipped
     # TODO stats
 
