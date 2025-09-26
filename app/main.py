@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 
 from parse.date import datetime_serializer, parse_date_raw
@@ -33,7 +34,27 @@ def eml_to_stats(mbox_filepath):
     # TODO stats
 
 
+# @warnings.deprecated("control flow is weird")
+def cached_generate(filepath, callback):
+    """
+    try to load json from `filepath`
+    if not present, call `callback()`, and save it to `filepath` for next time
+    """
+    if os.path.isfile(filepath):
+        return load_json(filepath)
+    data = callback()
+    save_json(filepath, data)
+    return data
+
+
+def load_json(filepath):
+    print(f"loading {filepath}")
+    with open(filepath, "r") as file:
+        return json.loads(file.read())
+
+
 def save_json(filepath, data):
+    print(f"saving {filepath}")
     with open(filepath, "w") as file:
         file.write(json.dumps(data, indent=2, default=datetime_serializer))
 
