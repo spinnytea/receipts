@@ -1,3 +1,2 @@
-*
-!.gitignore
-!receipt_raw_sample.txt
+dumps/
+/*.*

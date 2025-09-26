@@ -513,7 +513,9 @@ class TestParseReceiptUnits(unittest.TestCase):
 class TestParseReceiptRawSample(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        with open("raw/receipt_raw_sample.txt", "r", encoding="utf-8") as file:
+        with open(
+            "raw/test_data/receipt_raw_sample.txt", "r", encoding="utf-8"
+        ) as file:
             self.receipt_raw_sample = file.read()
         self.receipt_raw_sample = [
             line.strip('"') for line in self.receipt_raw_sample.splitlines()
@@ -1058,6 +1060,75 @@ class TestParseReceiptRawSample(unittest.TestCase):
         # we should have verified them all
         self.assertEqual(len(items), 0)
 
+        if trans.get("warning", []) and "(skipped)" in ".".join(trans.get("warning")):
+            print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
+        self.assertEqual(trans.get("warning", []), [])
+        self.assertEqual(trans["receipt_data"].get("skipped", []), [])
+
+
+class TestParseReceiptRawStoreCoupon(unittest.TestCase):
+    @classmethod
+    def setUpClass(self):
+        with open(
+            "raw/test_data/receipt_raw_storecoupon.txt", "r", encoding="utf-8"
+        ) as file:
+            self.receipt_raw_storecoupon = file.read()
+        self.receipt_raw_storecoupon = [
+            line.strip('"') for line in self.receipt_raw_storecoupon.splitlines()
+        ]
+
+    def test_loaded_sample(self):
+        self.assertEqual(len(self.receipt_raw_storecoupon), 120)
+
+        all_lens = set()
+        for line in self.receipt_raw_storecoupon:
+            all_lens.add(len(line))
+        self.assertEqual(all_lens, {38})
+
+    @unittest.skip("SC      $3 OFF WYB3             3.00-T")
+    def test_receipt_raw_storecoupon(self):
+        trans = {
+            "id": "receipt_raw_storecoupon",
+            "receipt_raw": self.receipt_raw_storecoupon,
+        }
+        _parse_receipt_raw(trans)
+        names = [
+            (item["name"], item["price"]) for item in trans["receipt_data"]["items"]
+        ]
+        self.assertAlmostEquals(len(names), 26)
+        self.assertEquals(
+            names,
+            [
+                ("4CT ASSRTED RLLS", Decimal("2.79")),
+                ("CHBN CRMR 24Z", Decimal("3.99")),
+                ("JLY LMA MNT CON", Decimal("5.19")),
+                ("POPTARTS 13.5Z", Decimal("2.50")),
+                ("POPTARTS 13.5Z", Decimal("2.50")),
+                ("POPTARTS 13.5Z", Decimal("2.50")),
+                ("MILK BONE BISCUT", Decimal("5.29")),
+                ("MEZZ SLCD HT 16Z", Decimal("2.50")),
+                ("OLIVE GRLC STF", Decimal("4.89")),
+                ("MT OLVE BR&BTR P", Decimal("3.59")),
+                ("SB LT BRWN SUG", Decimal("2.99")),
+                ("RU OR BRK 12Z", Decimal("15.69")),
+                ("SOH SCO PRTZL12Z", Decimal("3.99")),
+                ("FL DORNACH14.5Z", Decimal("5.99")),
+                ("ATK RTD FV SH88Z", Decimal("18.19")),
+                ("85% GRND BF 16PK", Decimal("10.36")),
+                ("POTATO SWEET", Decimal("2.78")),
+                ("ONION VIDALIA", Decimal("1.42")),
+                ("+NECTARINE", Decimal("5.99")),
+                ("GREEN PEPPERS", Decimal("1.98")),
+                ("CUCUMBERS", Decimal("0.88")),
+                ("GREENHSE  TOMATO", Decimal("2.02")),
+                ("NECTARINES", Decimal("7.50")),
+                ("LIMES", Decimal("0.50")),
+                ("WILLYS MED SALSA", Decimal("5.99")),
+                ("SB BTR LTTCEBLND", Decimal("2.99")),
+            ],
+        )
+
+        # TODO finish
         if trans.get("warning", []) and "(skipped)" in ".".join(trans.get("warning")):
             print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
         self.assertEqual(trans.get("warning", []), [])
