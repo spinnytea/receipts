@@ -22,15 +22,15 @@ test_once:
 # npm install -g nodemon
 test: lint
 	@echo
-	nodemon --watch app --watch raw --watch test --ext mbox,py --exec python3 -m unittest $(filter)
+	nodemon --watch app --watch data --watch test --ext mbox,py --exec python3 -m unittest $(filter)
 	@echo
 
 run:
 	@echo
-	python3 app/main.py "raw/dumps/Purchase-Groceries.mbox" > raw/temp.out
+	python3 app/main.py "data/dumps/Purchase-Groceries.mbox" > data/temp.out
 	@echo
 
 clean:
 	@echo
-	rm -f raw/receipt_raw.json raw/temp.out
+	rm -f data/receipt_raw.json data/temp.out
 	@echo

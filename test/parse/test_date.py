@@ -9,7 +9,7 @@ from app.parse.mail import parse_mbox_file
 class TestParseReceipt(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        transactions = parse_mbox_file("raw/dumps/Purchase-Groceries.mbox")
+        transactions = parse_mbox_file("data/dumps/Purchase-Groceries.mbox")
         parse_date_raw(transactions)
 
         self.transactions = transactions

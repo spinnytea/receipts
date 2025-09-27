@@ -11,7 +11,7 @@ from app.parse.receipt import ReceiptParser, _parse_receipt_raw, parse_receipt_r
 class TestParseReceipt(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.transactions = parse_mbox_file("raw/dumps/Purchase-Groceries.mbox")
+        self.transactions = parse_mbox_file("data/dumps/Purchase-Groceries.mbox")
         parse_body_html(self.transactions)
         parse_receipt_raw(self.transactions)
 
@@ -514,7 +514,7 @@ class TestParseReceiptRawSample(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         with open(
-            "raw/test_data/receipt_raw_sample.txt", "r", encoding="utf-8"
+            "data/test_data/receipt_raw_sample.txt", "r", encoding="utf-8"
         ) as file:
             self.receipt_raw_sample = file.read()
         self.receipt_raw_sample = [
@@ -1070,7 +1070,7 @@ class TestParseReceiptRawStoreCoupon(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         with open(
-            "raw/test_data/receipt_raw_storecoupon.txt", "r", encoding="utf-8"
+            "data/test_data/receipt_raw_storecoupon.txt", "r", encoding="utf-8"
         ) as file:
             self.receipt_raw_storecoupon = file.read()
         self.receipt_raw_storecoupon = [

@@ -12,8 +12,9 @@ def eml_to_stats(mbox_filepath):
     transactions = parse_mbox_file(mbox_filepath)
     parse_date_raw(transactions)
     parse_body_html(transactions)
-    save_json("raw/receipt_raw.json", transactions)
+    save_json("data/receipt_raw.json", transactions)
     parse_receipt_raw(transactions)
+    save_json("data/receipt_parsed.json", transactions)
 
     print(f"parse {len(transactions)} messages")
     warning_count = sum("skipped" in trans["receipt_data"] for trans in transactions)
@@ -23,6 +24,11 @@ def eml_to_stats(mbox_filepath):
     if warning_count:
         print(f"still have {warning_count} messages with warnings")
     print(f"{json.dumps(transactions, indent=2, default=datetime_serializer)}")
+
+    # TODO venv
+    #  - python3.12
+    #  - move ruff, isort
+    #  - pandas
 
     # TODO load .eml
     # TODO load every file in folder

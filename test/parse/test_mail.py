@@ -6,7 +6,7 @@ from app.parse.mail import parse_mbox_file
 class TestParseMail(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.transactions = parse_mbox_file("raw/test_data/test_simple.mbox")
+        self.transactions = parse_mbox_file("data/test_data/test_simple.mbox")
 
     def test_count(self):
         self.assertEqual(len(self.transactions), 1)
