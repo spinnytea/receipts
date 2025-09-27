@@ -25,5 +25,5 @@ def datetime_serializer(obj):
     if isinstance(obj, datetime.datetime):
         return obj.isoformat()  # Converts to ISO string
     if isinstance(obj, decimal.Decimal):
-        return float(obj)
+        return str(obj)
     raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")

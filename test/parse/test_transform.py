@@ -1,5 +1,12 @@
 import json
 import unittest
+from decimal import Decimal
+
+from app.parse.transform import (
+    TransformFormat,
+    _transform_receipt_parsed_to_list,
+    transform_receipt_parsed,
+)
 
 
 class TestParseTransform(unittest.TestCase):
@@ -9,6 +16,10 @@ class TestParseTransform(unittest.TestCase):
             "data/test_data/receipt_parsed_sample.json", "r", encoding="utf-8"
         ) as file:
             self.receipt_parsed_sample = json.loads(file.read())
+            # XXX move to a generic "load this type of data" instead of just json.loads
+            for trans in self.receipt_parsed_sample:
+                for item in trans["receipt_data"]["items"]:
+                    item["price"] = Decimal(item["price"])
 
     def test_loaded_sample(self):
         self.assertEqual(len(self.receipt_parsed_sample), 2)
@@ -19,8 +30,86 @@ class TestParseTransform(unittest.TestCase):
             ["date", "date_raw", "id", "idx", "receipt_data"],
             f"bad keys for transaction {trans['id']}",
         )
+        self.assertEqual(trans["date"], "2025-06-16T22:54:31+00:00")
+        item = trans["receipt_data"]["items"][0]
+        self.assertEqual(
+            sorted(item.keys()),
+            ["adjustments", "category", "lines", "name", "price", "taxable"],
+            f"bad keys for transaction {trans['id']} item #0",
+        )
+        self.assertEqual(item["name"], "PF WG 15 GRAIN")
+        self.assertEqual(item["price"], Decimal("4.49"))
+        self.assertEqual(item["category"], "BAKERY - COMMERCIAL")
+
+    def test_one_list(self):
+        trans = self.receipt_parsed_sample[0]
+        results = _transform_receipt_parsed_to_list(trans)
+        self.assertEqual(len(results), 4)
+        self.assertEqual(
+            results,
+            [
+                {
+                    "date": "2025-06-16T22:54:31+00:00",
+                    "category": "BAKERY - COMMERCIAL",
+                    "price": Decimal("4.49"),
+                },
+                {
+                    "date": "2025-06-16T22:54:31+00:00",
+                    "category": "DAIRY",
+                    "price": Decimal("5.19"),
+                },
+                {
+                    "date": "2025-06-16T22:54:31+00:00",
+                    "category": "DAIRY",
+                    "price": Decimal("5.19"),
+                },
+                {
+                    "date": "2025-06-16T22:54:31+00:00",
+                    "category": "GROCERY",
+                    "price": Decimal("13.99"),
+                },
+            ],
+        )
+
+    def test_all_list(self):
+        results = transform_receipt_parsed(
+            self.receipt_parsed_sample, format=TransformFormat.List
+        )
+        self.assertEqual(len(results), 35)
+        self.assertEqual(
+            results[0],
+            {
+                "date": "2025-06-16T22:54:31+00:00",
+                "category": "BAKERY - COMMERCIAL",
+                "price": Decimal("4.49"),
+            },
+        )
+        self.assertEqual(
+            results[3],
+            {
+                "date": "2025-06-16T22:54:31+00:00",
+                "category": "GROCERY",
+                "price": Decimal("13.99"),
+            },
+        )
+        self.assertEqual(
+            results[4],
+            {
+                "date": "2025-05-24T19:12:21+00:00",
+                "category": "DAIRY",
+                "price": Decimal("3.00"),
+            },
+        )
+        self.assertEqual(
+            results[34],
+            {
+                "date": "2025-05-24T19:12:21+00:00",
+                "category": "PRODUCE",
+                "price": Decimal("1.45"),
+            },
+        )
 
     @unittest.skip("not implemented")
-    def test_everything_else(self):
+    def test_table(self):
         # TODO finish
         pass

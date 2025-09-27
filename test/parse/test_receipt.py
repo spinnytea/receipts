@@ -1096,7 +1096,7 @@ class TestParseReceiptRawStoreCoupon(unittest.TestCase):
             (item["name"], item["price"]) for item in trans["receipt_data"]["items"]
         ]
         self.assertAlmostEquals(len(names), 26)
-        self.assertEquals(
+        self.assertEqual(
             names,
             [
                 ("4CT ASSRTED RLLS", Decimal("2.79")),
