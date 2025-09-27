@@ -4,7 +4,7 @@ from typing import List
 
 # XXX should categories be automatic?
 CATEGORIES = [
-    "Age Restricted: \d+",
+    "Age Restricted: 18",
     "BAKE SHOP",
     "BAKERY - COMMERCIAL",
     "CHEESE SHOP",

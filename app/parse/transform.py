@@ -1,4 +1,7 @@
+from decimal import Decimal
 from enum import Enum
+
+from app.parse.receipt import CATEGORIES
 
 
 class TransformFormat(Enum):
@@ -17,6 +20,8 @@ def transform_receipt_parsed(transactions, *, format: TransformFormat):
             result = None
             if format == TransformFormat.List:
                 result = _transform_receipt_parsed_to_list(trans)
+            elif format == TransformFormat.Table:
+                result = _transform_receipt_parsed_to_table(trans)
 
             if isinstance(result, list):
                 results.extend(result)
@@ -36,3 +41,11 @@ def _transform_receipt_parsed_to_list(trans):
             }
         )
     return items
+
+
+def _transform_receipt_parsed_to_table(trans):
+    agg = {"date": trans["date"], **{category: Decimal("0") for category in CATEGORIES}}
+    for item in trans["receipt_data"]["items"]:
+        category = item["category"]
+        agg[category] = agg.get(category, Decimal("0")) + item["price"]
+    return agg
