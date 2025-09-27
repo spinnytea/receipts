@@ -32,5 +32,5 @@ run:
 
 clean:
 	@echo
-	rm -f data/receipt_raw.json data/temp.out
+	rm -f data/receipt_raw.json data/receipt_parsed.json data/temp.out
 	@echo
