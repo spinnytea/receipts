@@ -44,10 +44,10 @@ CREDIT_LINE = re.compile(r"^(SC)\s{6}(.{20})\s*(\d+\.\d\d)( F|-F)")
 WEIGHT_LINE = re.compile(r"^ (\d*\.\d+ lb @ \d+\.\d\d /lb)( = (\d+\.\d\d))?\s+$")
 QUANTITY_LINE = re.compile(r"^ (\d+ @ \d+\.\d\d)\s+$")
 
-# XXX never ever ever hard code the tax rate, set it as an env var or something
 SKIP_TAX_CHECK = False
 
 
+# XXX never ever ever hard code the tax rate, set it as an env var or something
 def APPLY_TAX_RATE(amount):
     return (amount * Decimal("0.06")).quantize(Decimal("0.01"), rounding=ROUND_UP)
 
@@ -126,7 +126,7 @@ class ReceiptParser:
             if "store_number" not in self.data:
                 # throw out all the lines before the store number
                 # (the next line starts the produce)
-                # TODO parse date on receipt
+                # TODO parse date on reciept (store day time, day time 111 222 33 000000)
                 x = re.match("^Store #(\d+)", line)
                 if x:
                     self.data["store_number"] = int(x.group(1))
@@ -166,7 +166,7 @@ class ReceiptParser:
                 continue
 
             if not self.parsing_groceries:
-                # TODO do not skip everything else?
+                # skip everything else
                 continue
 
             if self.skip_rest:
@@ -313,7 +313,7 @@ class ReceiptParser:
         taxable = code in TAXABLE_CODES
         scale = -1 if code[0] == "-" else 1
 
-        # XXX maybe it should just be "tax_code !== self.current_item["tax_code"]"
+        # XXX should it be "tax_code !== self.current_item["tax_code"]"
         if taxable != self.current_item["taxable"]:
             self.warning.append(f"mismatch taxable: {match} -- {self.current_item}")
 
@@ -366,14 +366,6 @@ class ReceiptParser:
             else:
                 # valid
                 pass
-
-        # XXX not sure if it should be a separate adjustment?
-        # self.current_item["adjustments"].append(
-        #     {
-        #         "readout": weight_readout,
-        #         "type": "weight_readout",
-        #     }
-        # )
 
     def _add_quantity_readout(self):
         [quantity_readout] = self.current_quantity["match"]

@@ -25,11 +25,6 @@ def eml_to_stats(mbox_filepath):
         print(f"still have {warning_count} messages with warnings")
     print(f"{json.dumps(transactions, indent=2, default=datetime_serializer)}")
 
-    # TODO venv
-    #  - python3.12
-    #  - move ruff, isort
-    #  - pandas
-
     # TODO load .eml
     # TODO load every file in folder
     # TODO de-dup (by date?)
@@ -37,7 +32,18 @@ def eml_to_stats(mbox_filepath):
     # TODO TOTAL NUMBER OF ITEMS SOLD
 
     # TODO keep adding test cases until there are not skipped
-    # TODO stats
+    #  - one more to go
+
+    # TODO stats (numpy)
+    #  - make a datatable
+    #  - collect total categories
+    #  - filter by date, sum categories
+    #  - graph? (for fun)
+    # TODO stats (pandas)
+    #  - venv
+    #  - python3.12
+    #  - move ruff, isort
+    #  - pandas
 
 
 # @warnings.deprecated("control flow is weird")
