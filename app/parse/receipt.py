@@ -53,6 +53,9 @@ def APPLY_TAX_RATE(amount):
 
 
 def parse_receipt_raw(transactions):
+    """
+    Parse the receipt paper / printout, turn it into a structured list of items
+    """
     for trans in transactions:
         if "receipt_raw" in trans:
             _parse_receipt_raw(trans)

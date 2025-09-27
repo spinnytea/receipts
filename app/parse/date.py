@@ -6,6 +6,9 @@ format_string = "%a, %d %b %Y %H:%M:%S %z"
 
 
 def parse_date_raw(transactions):
+    """
+    Convert the date strings into python date objects
+    """
     for trans in transactions:
         if "date_raw" not in trans:
             trans.setdefault("warning", []).append("missing date")

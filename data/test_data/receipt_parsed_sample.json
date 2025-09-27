@@ -1,0 +1,818 @@
+[
+  {
+    "idx": 0,
+    "date_raw": "Mon, 16 Jun 2025 22:54:31 +0000",
+    "id": "0@Mon, 16 Jun 2025 22:54:31 +0000",
+    "date": "2025-06-16T22:54:31+00:00",
+    "receipt_data": {
+      "items": [
+        {
+          "name": "PF WG 15 GRAIN",
+          "price": 4.49,
+          "category": "BAKERY - COMMERCIAL",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "PF WG 15 GRAIN",
+              "amount": 4.99,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.5,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 4.49,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        PF WG 15 GRAIN          4.99 F",
+            "        BONUS BUY SAVINGS       0.50-F",
+            "   PRICE YOU PAY           4.49       "
+          ]
+        },
+        {
+          "name": "PB MNST CK 12CT",
+          "price": 5.19,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "PB MNST CK 12CT",
+              "amount": 5.19,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        PB MNST CK 12CT         5.19 F"
+          ]
+        },
+        {
+          "name": "PB MNST CK 12CT",
+          "price": 5.19,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "PB MNST CK 12CT",
+              "amount": 5.19,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        PB MNST CK 12CT         5.19 F"
+          ]
+        },
+        {
+          "name": "STMPTWN FOUNDERS",
+          "price": 13.99,
+          "category": "GROCERY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "STMPTWN FOUNDERS",
+              "amount": 16.89,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 2.9,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 13.99,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        STMPTWN FOUNDERS       16.89 F",
+            "        BONUS BUY SAVINGS       2.90-F",
+            "   PRICE YOU PAY           13.99      "
+          ]
+        }
+      ],
+      "store_number": 155,
+      "tax": 0.0,
+      "balance": 28.86
+    }
+  },
+  {
+    "idx": 31,
+    "date_raw": "Sat, 24 May 2025 19:12:21 +0000",
+    "id": "31@Sat, 24 May 2025 19:12:21 +0000",
+    "date": "2025-05-24T19:12:21+00:00",
+    "receipt_data": {
+      "items": [
+        {
+          "name": "PHIL CRM CHEES8Z",
+          "price": 3.0,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "PHIL CRM CHEES8Z",
+              "amount": 3.99,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.99,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 3.0,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        PHIL CRM CHEES8Z        3.99 F",
+            "        BONUS BUY SAVINGS       0.99-F",
+            "   PRICE YOU PAY           3.00       "
+          ]
+        },
+        {
+          "name": "BLACKCHRY 0% 4PK",
+          "price": 5.99,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "BLACKCHRY 0% 4PK",
+              "amount": 5.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        BLACKCHRY 0% 4PK        5.99 F"
+          ]
+        },
+        {
+          "name": "PLRS ORG CVN16Z",
+          "price": 4.99,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "PLRS ORG CVN16Z",
+              "amount": 4.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        PLRS ORG CVN16Z         4.99 F"
+          ]
+        },
+        {
+          "name": "SIGGI STRW 5.3Z",
+          "price": 2.19,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SIGGI STRW 5.3Z",
+              "amount": 2.19,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SIGGI STRW 5.3Z         2.19 F"
+          ]
+        },
+        {
+          "name": "YPL OUI DF VNL5Z",
+          "price": 2.39,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "YPL OUI DF VNL5Z",
+              "amount": 2.39,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        YPL OUI DF VNL5Z        2.39 F"
+          ]
+        },
+        {
+          "name": "SB EGGS LRG",
+          "price": 4.19,
+          "category": "DAIRY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SB EGGS LRG",
+              "amount": 4.19,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SB EGGS LRG             4.19 F"
+          ]
+        },
+        {
+          "name": "SL GARLIC PRESS",
+          "price": 7.73,
+          "category": "GENERAL MERCHANDISE",
+          "taxable": true,
+          "adjustments": [
+            {
+              "name": "SL GARLIC PRESS",
+              "amount": 8.59,
+              "code": " T",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.86,
+              "code": "-T",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 7.73,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        SL GARLIC PRESS         8.59 T",
+            "        BONUS BUY SAVINGS       0.86-T",
+            "   PRICE YOU PAY           7.73       "
+          ]
+        },
+        {
+          "name": "SB CDER VINEGAR",
+          "price": 1.99,
+          "category": "GROCERY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SB CDER VINEGAR",
+              "amount": 1.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SB CDER VINEGAR         1.99 F"
+          ]
+        },
+        {
+          "name": "BRLLCKPEAPN8.8Z",
+          "price": 3.59,
+          "category": "GROCERY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "BRLLCKPEAPN8.8Z",
+              "amount": 3.59,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        BRLLCKPEAPN8.8Z         3.59 F"
+          ]
+        },
+        {
+          "name": "SB MARSH CRM 7Z",
+          "price": 1.59,
+          "category": "GROCERY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SB MARSH CRM 7Z",
+              "amount": 1.59,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SB MARSH CRM 7Z         1.59 F"
+          ]
+        },
+        {
+          "name": "BONE NAM STW PRE",
+          "price": 6.99,
+          "category": "GROCERY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "BONE NAM STW PRE",
+              "amount": 6.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        BONE NAM STW PRE        6.99 F"
+          ]
+        },
+        {
+          "name": "SB WALNUTS H&P",
+          "price": 6.39,
+          "category": "GROCERY",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SB WALNUTS H&P",
+              "amount": 6.39,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SB WALNUTS H&P          6.39 F"
+          ]
+        },
+        {
+          "name": "BP HD MT FRANKS",
+          "price": 2.5,
+          "category": "MEAT",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "BP HD MT FRANKS",
+              "amount": 4.49,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 1.99,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 2.5,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        BP HD MT FRANKS         4.49 F",
+            "        BONUS BUY SAVINGS       1.99-F",
+            "   PRICE YOU PAY           2.50       "
+          ]
+        },
+        {
+          "name": "BP HD MT FRANKS",
+          "price": 2.5,
+          "category": "MEAT",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "BP HD MT FRANKS",
+              "amount": 4.49,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 1.99,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 2.5,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        BP HD MT FRANKS         4.49 F",
+            "        BONUS BUY SAVINGS       1.99-F",
+            "   PRICE YOU PAY           2.50       "
+          ]
+        },
+        {
+          "name": "PRE BEEF RE STK",
+          "price": 11.99,
+          "category": "MEAT",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "PRE BEEF RE STK",
+              "amount": 15.99,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 4.0,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 11.99,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        PRE BEEF RE STK        15.99 F",
+            "        BONUS BUY SAVINGS       4.00-F",
+            "   PRICE YOU PAY           11.99      "
+          ]
+        },
+        {
+          "name": "CARROTS 2LB",
+          "price": 1.99,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "CARROTS 2LB",
+              "amount": 1.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        CARROTS 2LB             1.99 F"
+          ]
+        },
+        {
+          "name": "LTLPT BMR GLD",
+          "price": 3.99,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "LTLPT BMR GLD",
+              "amount": 3.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        LTLPT BMR GLD           3.99 F"
+          ]
+        },
+        {
+          "name": "SW GARLIC 9.5Z",
+          "price": 3.99,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SW GARLIC 9.5Z",
+              "amount": 3.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SW GARLIC 9.5Z          3.99 F"
+          ]
+        },
+        {
+          "name": "SW SQ GINGER 10Z",
+          "price": 4.49,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SW SQ GINGER 10Z",
+              "amount": 4.49,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        SW SQ GINGER 10Z        4.49 F"
+          ]
+        },
+        {
+          "name": "AUR GRANOLA 13Z",
+          "price": 5.99,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "AUR GRANOLA 13Z",
+              "amount": 5.99,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        AUR GRANOLA 13Z         5.99 F"
+          ]
+        },
+        {
+          "name": "1LB STRAWBERRY",
+          "price": 3.79,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "1LB STRAWBERRY",
+              "amount": 4.99,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 1.2,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 3.79,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        1LB STRAWBERRY          4.99 F",
+            "        BONUS BUY SAVINGS       1.20-F",
+            "   PRICE YOU PAY           3.79       "
+          ]
+        },
+        {
+          "name": "RED SEEDLESS GRA",
+          "price": 6.1,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "RED SEEDLESS GRA",
+              "amount": 6.1,
+              "code": " F",
+              "type": "sum",
+              "weight_readout": "1.53 lb @ 3.99 /lb"
+            }
+          ],
+          "lines": [
+            " 1.53 lb @ 3.99 /lb                   ",
+            "WT      RED SEEDLESS GRA        6.10 F"
+          ]
+        },
+        {
+          "name": "ASPARAGUS",
+          "price": 3.35,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "ASPARAGUS",
+              "amount": 4.24,
+              "code": " F",
+              "type": "sum",
+              "weight_readout": "1.12 lb @ 3.79 /lb"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.89,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 3.35,
+              "type": "verify",
+              "weight_readout": "1.12 lb @ 2.99 /lb",
+              "weight_price": 3.35
+            }
+          ],
+          "lines": [
+            " 1.12 lb @ 3.79 /lb                   ",
+            "WT      ASPARAGUS               4.24 F",
+            " 1.12 lb @ 2.99 /lb = 3.35            ",
+            "        BONUS BUY SAVINGS       0.89-F",
+            "   PRICE YOU PAY           3.35       "
+          ]
+        },
+        {
+          "name": "+LEMONS",
+          "price": 0.67,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "+LEMONS",
+              "amount": 0.67,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        +LEMONS                 0.67 F"
+          ]
+        },
+        {
+          "name": "KIWI",
+          "price": 2.0,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "KIWI",
+              "amount": 3.16,
+              "code": " F",
+              "type": "sum",
+              "quantity_readout": "4 @ 0.79"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 1.16,
+              "code": "-F",
+              "type": "sum",
+              "quantity_readout": "4 @ 0.29"
+            },
+            {
+              "name": "PRICE YOU PAY FOR",
+              "price": 2.0,
+              "quantity": 4,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            " 4 @ 0.79                             ",
+            "        KIWI                    3.16 F",
+            " 4 @ 0.29                             ",
+            "        BONUS BUY SAVINGS       1.16-F",
+            "   PRICE YOU PAY FOR   4   2.00       "
+          ]
+        },
+        {
+          "name": "SUMMER SQUASH",
+          "price": 1.41,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "SUMMER SQUASH",
+              "amount": 1.77,
+              "code": " F",
+              "type": "sum",
+              "weight_readout": "0.71 lb @ 2.49 /lb"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.36,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 1.41,
+              "type": "verify",
+              "weight_readout": "0.71 lb @ 1.99 /lb",
+              "weight_price": 1.41
+            }
+          ],
+          "lines": [
+            " 0.71 lb @ 2.49 /lb                   ",
+            "WT      SUMMER SQUASH           1.77 F",
+            " 0.71 lb @ 1.99 /lb = 1.41            ",
+            "        BONUS BUY SAVINGS       0.36-F",
+            "   PRICE YOU PAY           1.41       "
+          ]
+        },
+        {
+          "name": "GARLIC",
+          "price": 0.69,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "GARLIC",
+              "amount": 0.69,
+              "code": " F",
+              "type": "sum"
+            }
+          ],
+          "lines": [
+            "        GARLIC                  0.69 F"
+          ]
+        },
+        {
+          "name": "LOOSE SHALLOTS",
+          "price": 0.52,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "LOOSE SHALLOTS",
+              "amount": 0.52,
+              "code": " F",
+              "type": "sum",
+              "weight_readout": "0.15 lb @ 3.49 /lb"
+            }
+          ],
+          "lines": [
+            " 0.15 lb @ 3.49 /lb                   ",
+            "WT      LOOSE SHALLOTS          0.52 F"
+          ]
+        },
+        {
+          "name": "IMPRTD RED PPPRS",
+          "price": 1.0,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "IMPRTD RED PPPRS",
+              "amount": 1.59,
+              "code": " F",
+              "type": "sum"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.59,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 1.0,
+              "type": "verify"
+            }
+          ],
+          "lines": [
+            "        IMPRTD RED PPPRS        1.59 F",
+            "        BONUS BUY SAVINGS       0.59-F",
+            "   PRICE YOU PAY           1.00       "
+          ]
+        },
+        {
+          "name": "BROCCOLI CROWNS",
+          "price": 1.49,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "BROCCOLI CROWNS",
+              "amount": 1.9,
+              "code": " F",
+              "type": "sum",
+              "weight_readout": "0.83 lb @ 2.29 /lb"
+            },
+            {
+              "name": "BONUS BUY SAVINGS",
+              "amount": 0.41,
+              "code": "-F",
+              "type": "sum"
+            },
+            {
+              "name": "PRICE YOU PAY",
+              "price": 1.49,
+              "type": "verify",
+              "weight_readout": "0.83 lb @ 1.79 /lb",
+              "weight_price": 1.49
+            }
+          ],
+          "lines": [
+            " 0.83 lb @ 2.29 /lb                   ",
+            "WT      BROCCOLI CROWNS         1.90 F",
+            " 0.83 lb @ 1.79 /lb = 1.49            ",
+            "        BONUS BUY SAVINGS       0.41-F",
+            "   PRICE YOU PAY           1.49       "
+          ]
+        },
+        {
+          "name": "FRESH BANANAS",
+          "price": 1.45,
+          "category": "PRODUCE",
+          "taxable": false,
+          "adjustments": [
+            {
+              "name": "FRESH BANANAS",
+              "amount": 1.45,
+              "code": " F",
+              "type": "sum",
+              "weight_readout": "2.46 lb @ 0.59 /lb"
+            }
+          ],
+          "lines": [
+            " 2.46 lb @ 0.59 /lb                   ",
+            "WT      FRESH BANANAS           1.45 F"
+          ]
+        }
+      ],
+      "store_number": 155,
+      "tax": 0.47,
+      "balance": 111.41
+    }
+  }
+]
