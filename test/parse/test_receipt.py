@@ -1085,8 +1085,10 @@ class TestParseReceiptRawStoreCoupon(unittest.TestCase):
             all_lens.add(len(line))
         self.assertEqual(all_lens, {38})
 
-    @unittest.skip("SC      $3 OFF WYB3             3.00-T")
     def test_receipt_raw_storecoupon(self):
+        # running the whole receipt is important
+        # this coupon needs the context of the whole receipt
+        # (not sure how just yet :/)
         trans = {
             "id": "receipt_raw_storecoupon",
             "receipt_raw": self.receipt_raw_storecoupon,
@@ -1095,7 +1097,7 @@ class TestParseReceiptRawStoreCoupon(unittest.TestCase):
         names = [
             (item["name"], item["price"]) for item in trans["receipt_data"]["items"]
         ]
-        self.assertAlmostEquals(len(names), 26)
+        self.assertEqual(len(names), 27)
         self.assertEqual(
             names,
             [
@@ -1125,10 +1127,31 @@ class TestParseReceiptRawStoreCoupon(unittest.TestCase):
                 ("LIMES", Decimal("0.50")),
                 ("WILLYS MED SALSA", Decimal("5.99")),
                 ("SB BTR LTTCEBLND", Decimal("2.99")),
+                ("$3 OFF WYB3", Decimal("-3.00")),
             ],
         )
 
-        # TODO finish
+        item = trans["receipt_data"]["items"][26]
+        self.assertEqual(
+            item,
+            {
+                "name": "$3 OFF WYB3",
+                "price": Decimal("-3.00"),
+                "category": "CONVENIENCE ITEMS",
+                "taxable": True,
+                "adjustments": [
+                    {
+                        "name": "$3 OFF WYB3",
+                        "amount": Decimal("3.00"),
+                        "code": "-T",
+                        "type": "sum",
+                    },
+                ],
+                "lines": ["SC      $3 OFF WYB3             3.00-T"],
+            },
+            json.dumps(item, default=datetime_serializer, indent=2),
+        )
+
         if trans.get("warning", []) and "(skipped)" in ".".join(trans.get("warning")):
             print(f"{json.dumps(trans['receipt_data'].get('skipped'), indent=2)}")
         self.assertEqual(trans.get("warning", []), [])

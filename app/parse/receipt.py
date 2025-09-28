@@ -79,7 +79,11 @@ def _parse_receipt_raw(trans):
             "Some of the receipt lines have not been accouned for (skipped)"
         )
 
-    if not parser.skip_rest:
+    if parser.skip_rest:
+        trans.setdefault("warning", []).append(
+            "skipping checks for totals, receipt nut fully parsed (skipped)"
+        )
+    else:
         if "tax" in receipt_data and receipt_data["tax"] > Decimal("0"):
             sum = Decimal(0)
             for item in receipt_data["items"]:
@@ -192,6 +196,29 @@ class ReceiptParser:
                 self.warning.append(
                     f"receipt should have a category by this point -- {line}"
                 )
+            elif line == "SC      $3 OFF WYB3             3.00-T":
+                # HACK special case $3 off coupon
+                #  - there is only one of these in the receipts
+                #  - i can't see a pattern
+                #  - there is another SC for rolls (deal for buying 6 at a different price)
+                #  - that coupon is accounted for as adjustments, and is done alongside with a "price you pay"
+                #  - this is just a rebate attached to the end
+                #  - no category, no context, related to some random item bought 3 times before
+                name = "$3 OFF WYB3"
+                cost = "3.00"
+                code = "-T"
+                self.current_item = {
+                    "name": name.strip(),
+                    "price": Decimal(0),
+                    "category": "CONVENIENCE ITEMS",
+                    "taxable": code in TAXABLE_CODES,
+                    "adjustments": [],
+                    "lines": [],
+                }
+                # TODO count by name and pick one with 3 items? then pick it's category
+                self._add_adjustment([name, cost, code], line)
+                self.data["items"].append(self.current_item)
+                continue
             else:
                 match_savings = re.match(
                     r"\s+((BONUS BUY )?SAVINGS)\s+(\d+\.\d\d)" + TAX_CODE_GROUP + r"$",
@@ -302,7 +329,7 @@ class ReceiptParser:
 
             self.data.setdefault("skipped", []).append(line)
             self.skip_rest = True
-            self.warning.append(f"skipped first, skip rest -- {line}")
+            self.warning.append(f"skipping rest -- {line}")
 
         self.current_item = None
 
