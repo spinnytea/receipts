@@ -1,7 +1,6 @@
 import datetime
 import decimal
 
-date_string = "Sat, 26 Apr 2025 15:23:14 +0000"
 format_string = "%a, %d %b %Y %H:%M:%S %z"
 
 
