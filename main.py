@@ -2,10 +2,11 @@ import json
 import os
 import sys
 
-from parse.date import datetime_serializer, parse_date_raw
-from parse.html import parse_body_html
-from parse.mail import parse_mbox_file
-from parse.receipt import parse_receipt_raw
+from app.parse.date import datetime_serializer, parse_date_raw
+from app.parse.html import parse_body_html
+from app.parse.mail import parse_mbox_file
+from app.parse.receipt import parse_receipt_raw
+from app.process.stats import stats_sum_receipt_parsed
 
 
 def eml_to_stats(mbox_filepath):
@@ -23,7 +24,9 @@ def eml_to_stats(mbox_filepath):
     warning_count = sum("warning" in trans for trans in transactions)
     if warning_count:
         print(f"still have {warning_count} messages with warnings")
-    print(f"{json.dumps(transactions, indent=2, default=datetime_serializer)}")
+
+    agg = stats_sum_receipt_parsed(transactions)
+    print(f"{json.dumps(agg, indent=2, default=datetime_serializer)}")
 
     # TODO load .eml
     # TODO load every file in folder

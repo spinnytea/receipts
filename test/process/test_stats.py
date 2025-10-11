@@ -6,7 +6,7 @@ from decimal import Decimal
 import dateutil.parser
 
 from app.parse.date import datetime_serializer
-from app.stats import stats_sum_receipt_parsed
+from app.process.stats import stats_sum_receipt_parsed
 
 
 class TestSumTransactions(unittest.TestCase):

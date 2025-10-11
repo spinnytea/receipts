@@ -27,7 +27,7 @@ test: lint
 
 run:
 	@echo
-	python3 app/main.py "data/dumps/Purchase-Groceries.mbox" > data/temp.out
+	python3 main.py "data/dumps/Purchase-Groceries.mbox" > data/temp.out
 	@echo
 
 clean:
