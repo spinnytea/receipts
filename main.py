@@ -27,8 +27,7 @@ def eml_to_stats(mbox_filepath):
 
     agg = stats_sum_receipt_parsed(transactions)
     # print(f"{json.dumps(agg, indent=2, default=datetime_serializer)}")
-    graph = stats_graph_agg(agg)
-    print(graph)
+    print(stats_graph_agg(agg, half=True, log_base=1.5))
 
     # TODO load .eml
     # TODO load every file in folder
