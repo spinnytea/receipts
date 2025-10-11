@@ -6,7 +6,7 @@ from app.parse.date import datetime_serializer, parse_date_raw
 from app.parse.html import parse_body_html
 from app.parse.mail import parse_mbox_file
 from app.parse.receipt import parse_receipt_raw
-from app.process.stats import stats_sum_receipt_parsed
+from app.process.stats import stats_graph_agg, stats_sum_receipt_parsed
 
 
 def eml_to_stats(mbox_filepath):
@@ -26,7 +26,9 @@ def eml_to_stats(mbox_filepath):
         print(f"still have {warning_count} messages with warnings")
 
     agg = stats_sum_receipt_parsed(transactions)
-    print(f"{json.dumps(agg, indent=2, default=datetime_serializer)}")
+    # print(f"{json.dumps(agg, indent=2, default=datetime_serializer)}")
+    graph = stats_graph_agg(agg)
+    print(graph)
 
     # TODO load .eml
     # TODO load every file in folder
@@ -34,15 +36,12 @@ def eml_to_stats(mbox_filepath):
     # TODO parse date on reciept (store day time, day time 111 222 33 000000)
     # TODO TOTAL NUMBER OF ITEMS SOLD
 
-    # TODO keep adding test cases until there are not skipped
-    #  - one more to go
-
-    # TODO stats (numpy)
+    # XXX stats (numpy)
     #  - make a datatable
     #  - collect total categories
     #  - filter by date, sum categories
     #  - graph? (for fun)
-    # TODO stats (pandas)
+    # XXX stats (pandas)
     #  - venv
     #  - python3.12
     #  - move ruff, isort

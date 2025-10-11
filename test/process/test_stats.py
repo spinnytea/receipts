@@ -6,7 +6,7 @@ from decimal import Decimal
 import dateutil.parser
 
 from app.parse.date import datetime_serializer
-from app.process.stats import stats_sum_receipt_parsed
+from app.process.stats import stats_graph_agg, stats_sum_receipt_parsed
 
 
 class TestSumTransactions(unittest.TestCase):
@@ -21,6 +21,31 @@ class TestSumTransactions(unittest.TestCase):
                 trans["date"] = dateutil.parser.isoparse(trans["date"])
                 for item in trans["receipt_data"]["items"]:
                     item["price"] = Decimal(item["price"])
+        self.agg = {
+            "date_min": datetime.datetime(
+                2025, 5, 24, 19, 12, 21, tzinfo=datetime.timezone.utc
+            ),
+            "date_max": datetime.datetime(
+                2025, 6, 16, 22, 54, 31, tzinfo=datetime.timezone.utc
+            ),
+            "cats": {
+                "Age Restricted: 18": Decimal("0"),
+                "BAKE SHOP": Decimal("0"),
+                "BAKERY - COMMERCIAL": Decimal("4.49"),
+                "CHEESE SHOP": Decimal("0"),
+                "CONVENIENCE ITEMS": Decimal("0"),
+                "DAIRY": Decimal("33.13"),
+                "DELI": Decimal("0"),
+                "FROZEN FOOD": Decimal("0"),
+                "GENERAL MERCHANDISE": Decimal("7.73"),
+                "GROCERY": Decimal("34.54"),
+                "HEALTH AND BEAUTY CARE": Decimal("0"),
+                "MEAT": Decimal("16.99"),
+                "PHARMACY": Decimal("0"),
+                "PREPARED FOODS": Decimal("0"),
+                "PRODUCE": Decimal("42.92"),
+            },
+        }
 
     def test_loaded_sample(self):
         self.assertEqual(len(self.receipt_parsed_sample), 2)
@@ -51,34 +76,23 @@ class TestSumTransactions(unittest.TestCase):
         self.assertIsInstance(agg["date_max"], datetime.datetime)
         self.assertEqual(
             agg,
-            {
-                "date_min": datetime.datetime(
-                    2025, 5, 24, 19, 12, 21, tzinfo=datetime.timezone.utc
-                ),
-                "date_max": datetime.datetime(
-                    2025, 6, 16, 22, 54, 31, tzinfo=datetime.timezone.utc
-                ),
-                "cats": {
-                    "Age Restricted: 18": Decimal("0"),
-                    "BAKE SHOP": Decimal("0"),
-                    "BAKERY - COMMERCIAL": Decimal("4.49"),
-                    "CHEESE SHOP": Decimal("0"),
-                    "CONVENIENCE ITEMS": Decimal("0"),
-                    "DAIRY": Decimal("33.13"),
-                    "DELI": Decimal("0"),
-                    "FROZEN FOOD": Decimal("0"),
-                    "GENERAL MERCHANDISE": Decimal("7.73"),
-                    "GROCERY": Decimal("34.54"),
-                    "HEALTH AND BEAUTY CARE": Decimal("0"),
-                    "MEAT": Decimal("16.99"),
-                    "PHARMACY": Decimal("0"),
-                    "PREPARED FOODS": Decimal("0"),
-                    "PRODUCE": Decimal("42.92"),
-                },
-            },
+            self.agg,
             json.dumps(agg, default=datetime_serializer, indent=2),
         )
 
     @unittest.skip("not implemented yet")
     def test_sum_cats_with_date_range(self):
         pass
+
+    def test_graph_it(self):
+        self.assertEqual(
+            stats_graph_agg(self.agg),
+            """
+   ■■■ - BAKERY - COMMERCIAL (4.49)
+■■■■■■ - DAIRY (33.13)
+   ■■■ - GENERAL MERCHANDISE (7.73)
+■■■■■■ - GROCERY (34.54)
+ ■■■■■ - MEAT (16.99)
+■■■■■■ - PRODUCE (42.92)
+""",
+        )
