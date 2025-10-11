@@ -88,11 +88,11 @@ class TestSumTransactions(unittest.TestCase):
         self.assertEqual(
             stats_graph_agg(self.agg),
             """
-   ■■■ - BAKERY - COMMERCIAL (4.49)
-■■■■■■ - DAIRY (33.13)
-   ■■■ - GENERAL MERCHANDISE (7.73)
-■■■■■■ - GROCERY (34.54)
- ■■■■■ - MEAT (16.99)
-■■■■■■ - PRODUCE (42.92)
+    ■■■   4.49 · BAKERY - COMMERCIAL
+ ■■■■■■  33.13 · DAIRY
+    ■■■   7.73 · GENERAL MERCHANDISE
+ ■■■■■■  34.54 · GROCERY
+  ■■■■■  16.99 · MEAT
+ ■■■■■■  42.92 · PRODUCE
 """,
         )

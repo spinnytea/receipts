@@ -39,18 +39,23 @@ def stats_graph_agg(agg):
     TODO arg for sort (name vs sum)
     """
     cats = []
-    max_size = 0
+    max_sizes = {
+        "graph": 0,
+        "sum": 0,
+    }
     for category, sum in agg.get("cats", {}).items():
         f = float(sum)
         if f > 0:
-            size = math.ceil(math.log2(f))
-            max_size = max(max_size, size)
+            graph_size = math.ceil(math.log2(f))
+            sum_size = len(str(sum))
+            max_sizes["graph"] = max(max_sizes["graph"], graph_size)
+            max_sizes["sum"] = max(max_sizes["sum"], sum_size)
             cats.append(
                 {
                     "category": category,
-                    "Decimal": sum,
+                    "sum": sum,
                     "float": f,
-                    "size": size,
+                    "graph_size": graph_size,
                 }
             )
     graph = "\n"
@@ -58,7 +63,8 @@ def stats_graph_agg(agg):
         # XXX is there a more terse way to unpack this?
         # TODO better graph character
         category = cat["category"]
-        sum = cat["Decimal"]
-        size = cat["size"]
-        graph += f"{''.rjust(size, '■').rjust(max_size)} - {category} ({sum})\n"
+        sum = cat["sum"]
+        g = "".rjust(cat["graph_size"], "■").rjust(max_sizes["graph"])
+        s = str(cat["sum"]).rjust(max_sizes["sum"])
+        graph += f" {g}  {s} · {category}\n"
     return graph
