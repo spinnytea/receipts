@@ -75,8 +75,9 @@ def stats_graph_agg(agg, half=False, log_base=2):
                     "graph_cap": graph_cap,
                 }
             )
+    ordered_cats = sorted(cats, key=lambda cat: cat["float"], reverse=True)
     graph = "\n"
-    for cat in cats:
+    for cat in ordered_cats:
         # XXX is there a more terse way to unpack this?
         # TODO better graph character
         category = cat["category"]
