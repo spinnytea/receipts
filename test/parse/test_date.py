@@ -19,14 +19,15 @@ class TestParseReceipt(unittest.TestCase):
         for trans in self.transactions:
             self.assertEqual(
                 sorted(trans.keys()),
-                ["body_html", "date", "date_raw", "id", "idx"],
+                ["body_html", "date", "date_raw", "filename", "id", "idx"],
                 f"bad keys for transaction {trans['id']}",
             )
 
     def test_one(self):
         trans = self.one
         self.assertEqual(
-            sorted(trans.keys()), ["body_html", "date", "date_raw", "id", "idx"]
+            sorted(trans.keys()),
+            ["body_html", "date", "date_raw", "filename", "id", "idx"],
         )
 
         date = trans["date"]
@@ -39,5 +40,5 @@ class TestParseReceipt(unittest.TestCase):
         trans_cp.pop("body_html")
         self.assertEqual(
             json.dumps(trans_cp, default=datetime_serializer),
-            '{"idx": 39, "date_raw": "Sat, 26 Apr 2025 15:23:14 +0000", "id": "39@Sat, 26 Apr 2025 15:23:14 +0000", "date": "2025-04-26T15:23:14+00:00"}',
+            '{"filename": "data/dumps/Purchase-Groceries.mbox", "idx": 39, "date_raw": "Sat, 26 Apr 2025 15:23:14 +0000", "id": "Sat, 26 Apr 2025 15:23:14 +0000 @ data/dumps/Purchase-Groceries.mbox", "date": "2025-04-26T15:23:14+00:00"}',
         )

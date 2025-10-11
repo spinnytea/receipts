@@ -17,7 +17,7 @@ class TestParseHtml(unittest.TestCase):
         for trans in self.transactions:
             self.assertEqual(
                 sorted(trans.keys()),
-                ["date_raw", "id", "idx", "receipt_raw"],
+                ["date_raw", "filename", "id", "idx", "receipt_raw"],
                 f"bad keys for transaction {trans['id']}",
             )
 
@@ -34,7 +34,9 @@ class TestParseHtml(unittest.TestCase):
 
     def test_one(self):
         trans = self.one
-        self.assertEqual(sorted(trans.keys()), ["date_raw", "id", "idx", "receipt_raw"])
+        self.assertEqual(
+            sorted(trans.keys()), ["date_raw", "filename", "id", "idx", "receipt_raw"]
+        )
 
         receipt_raw = trans["receipt_raw"]
         self.assertEqual(len(receipt_raw), 53)

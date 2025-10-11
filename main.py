@@ -4,13 +4,13 @@ import sys
 
 from app.parse.date import datetime_serializer, parse_date_raw
 from app.parse.html import parse_body_html
-from app.parse.mail import parse_mbox_file
+from app.parse.mail import traverse_files_recursive
 from app.parse.receipt import parse_receipt_raw
 from app.process.stats import stats_graph_agg, stats_sum_receipt_parsed
 
 
-def eml_to_stats(mbox_filepath):
-    transactions = parse_mbox_file(mbox_filepath)
+def eml_to_stats(data_dumps_directory):
+    transactions = traverse_files_recursive(data_dumps_directory)
     parse_date_raw(transactions)
     parse_body_html(transactions)
     save_json("data/receipt_raw.json", transactions)
@@ -27,11 +27,9 @@ def eml_to_stats(mbox_filepath):
 
     agg = stats_sum_receipt_parsed(transactions)
     # print(f"{json.dumps(agg, indent=2, default=datetime_serializer)}")
+    print(f"\nFrom: {agg['date_min']}\n  To: {agg['date_max']}")
     print(stats_graph_agg(agg, half=True, log_base=1.5))
 
-    # TODO load .eml
-    # TODO load every file in folder
-    # TODO de-dup (by date?)
     # TODO parse date on reciept (store day time, day time 111 222 33 000000)
     # TODO TOTAL NUMBER OF ITEMS SOLD
 
@@ -73,5 +71,5 @@ def save_json(filepath, data):
 
 
 if __name__ == "__main__":
-    mbox_filepath = sys.argv[1]
-    eml_to_stats(mbox_filepath)
+    data_dumps_directory = sys.argv[1]
+    eml_to_stats(data_dumps_directory)

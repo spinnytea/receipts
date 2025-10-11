@@ -29,7 +29,7 @@ class TestParseTransform(unittest.TestCase):
         trans = self.receipt_parsed_sample[0]
         self.assertEqual(
             sorted(trans.keys()),
-            ["date", "date_raw", "id", "idx", "receipt_data"],
+            ["date", "date_raw", "filename", "id", "idx", "receipt_data"],
             f"bad keys for transaction {trans['id']}",
         )
         self.assertEqual(trans["date"], "2025-06-16T22:54:31+00:00")

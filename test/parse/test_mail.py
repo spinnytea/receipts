@@ -15,14 +15,19 @@ class TestParseEmail(unittest.TestCase):
         for trans in self.transactions:
             self.assertEqual(
                 sorted(trans.keys()),
-                ["body_html", "date_raw", "id", "idx"],
+                ["body_html", "date_raw", "filename", "id", "idx"],
                 f"bad keys for transaction {trans['id']}",
             )
 
     def test_one(self):
         trans = self.transactions[0]
-        self.assertEqual(sorted(trans.keys()), ["body_html", "date_raw", "id", "idx"])
-        self.assertEqual(trans["id"], "0@Wed, 08 Oct 2025 00:23:10 +0000")
+        self.assertEqual(
+            sorted(trans.keys()), ["body_html", "date_raw", "filename", "id", "idx"]
+        )
+        self.assertEqual(
+            trans["id"],
+            "Wed, 08 Oct 2025 00:23:10 +0000 @ data/test_data/test_simple.eml",
+        )
         self.assertEqual(trans["idx"], 0)
         self.assertEqual(trans["date_raw"], "Wed, 08 Oct 2025 00:23:10 +0000")
 
@@ -39,13 +44,18 @@ class TestParseMailbox(unittest.TestCase):
         for trans in self.transactions:
             self.assertEqual(
                 sorted(trans.keys()),
-                ["body_html", "date_raw", "id", "idx"],
+                ["body_html", "date_raw", "filename", "id", "idx"],
                 f"bad keys for transaction {trans['id']}",
             )
 
     def test_one(self):
         trans = self.transactions[0]
-        self.assertEqual(sorted(trans.keys()), ["body_html", "date_raw", "id", "idx"])
-        self.assertEqual(trans["id"], "0@Sat, 26 Apr 2025 15:23:14 +0000")
+        self.assertEqual(
+            sorted(trans.keys()), ["body_html", "date_raw", "filename", "id", "idx"]
+        )
+        self.assertEqual(
+            trans["id"],
+            "Sat, 26 Apr 2025 15:23:14 +0000 @ data/test_data/test_simple.mbox",
+        )
         self.assertEqual(trans["idx"], 0)
         self.assertEqual(trans["date_raw"], "Sat, 26 Apr 2025 15:23:14 +0000")

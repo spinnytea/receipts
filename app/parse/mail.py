@@ -1,4 +1,5 @@
 import mailbox
+import os
 from email import policy
 from email.parser import BytesParser
 
@@ -9,7 +10,7 @@ def parse_eml_file(eml_file_path):
 
     eml_file_path: filepath of eml file
     return list of dicts
-        id: some arbitrary value to tell them apart
+        id: some arbitrary value to tell them apart, within a given file
         date_raw: date from email
         body_html: html content of email
         body_text: text content of email
@@ -19,7 +20,7 @@ def parse_eml_file(eml_file_path):
     try:
         with open(eml_file_path, "rb") as fp:
             message = BytesParser(policy=policy.default).parse(fp)
-        transactions.append(get_transaction_from_message(0, message))
+        transactions.append(get_transaction_from_message(message, eml_file_path, 0))
     except FileNotFoundError:
         print(f"Error: Mbox file not found at {eml_file_path}")
     except Exception as e:
@@ -46,7 +47,9 @@ def parse_mbox_file(mbox_file_path):
         with MboxReader(mbox_file_path) as mbox:
             # Iterate through each message in the Mbox file
             for i, message in enumerate(mbox):
-                transactions.append(get_transaction_from_message(i, message))
+                transactions.append(
+                    get_transaction_from_message(message, mbox_file_path, i)
+                )
     except FileNotFoundError:
         print(f"Error: Mbox file not found at {mbox_file_path}")
     except Exception as e:
@@ -55,9 +58,10 @@ def parse_mbox_file(mbox_file_path):
     return transactions
 
 
-def get_transaction_from_message(i, message):
+def get_transaction_from_message(message, filename, idx):
     trans = {}
-    trans["idx"] = i  # FIXME not unique when across files
+    trans["filename"] = filename
+    trans["idx"] = idx
 
     # Extract header information
     # data["from"] = message["from"]
@@ -65,7 +69,8 @@ def get_transaction_from_message(i, message):
     # data["subject"] = message["subject"]
     trans["date_raw"] = message["date"]
 
-    trans["id"] = f"{i}@{trans['date_raw']}"
+    # XXX consider using date instead of idx
+    trans["id"] = f"{trans['date_raw']} @ {trans['filename']}"
 
     # Extract and print the email body (plain text part)
     if message.is_multipart():
@@ -74,7 +79,7 @@ def get_transaction_from_message(i, message):
             cdispo = str(part.get("Content-Disposition"))
 
             # trans.setdefault("warning", []).append(
-            #     f"Message: {trans['id']}, Content-Type: {ctype}, Content-Disposition: {cdispo}"
+            #     f"Message: {trans['date_raw']}, Content-Type: {ctype}, Content-Disposition: {cdispo}"
             # )
 
             # Only consider text parts, not attachments
@@ -115,3 +120,34 @@ class MboxReader:
         # if exc_type:
         #     print(f"An exception occurred: {exc_val}")
         return False
+
+
+def traverse_files_recursive(directory_path):
+    """
+    Recursively parse eml/mbox all files within a given directory and its subdirectories.
+
+    De-dup by date (full timestamp), in case exported the same email.
+
+    directory_path (str): The path to the directory to start the search from.
+    return list of transactions
+    """
+    unique_transactions = {}
+    for root, _, files in os.walk(directory_path):
+        for file in files:
+            full_path = os.path.join(root, file)
+            ts = []
+            if file.lower().endswith(".eml"):
+                ts.extend(parse_eml_file(full_path))
+            elif file.lower().endswith(".mbox"):
+                ts.extend(parse_mbox_file(full_path))
+            for trans in ts:
+                date_raw = trans["date_raw"]
+                if date_raw in unique_transactions:
+                    uniq = unique_transactions[date_raw]
+                    print(
+                        f"Duplicate email at {date_raw}\n  {trans['id']}\n  {uniq['id']}"
+                    )
+                    uniq.setdefault("duplicates", [uniq["id"]]).append(trans["id"])
+                else:
+                    unique_transactions[date_raw] = trans
+    return list(unique_transactions.values())

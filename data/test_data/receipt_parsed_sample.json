@@ -2,8 +2,9 @@
   {
     "idx": 0,
     "date_raw": "Mon, 16 Jun 2025 22:54:31 +0000",
-    "id": "0@Mon, 16 Jun 2025 22:54:31 +0000",
+    "id": "0@receipt_parsed_sample.json",
     "date": "2025-06-16T22:54:31+00:00",
+    "filename": "receipt_parsed_sample.json",
     "receipt_data": {
       "items": [
         {
@@ -109,8 +110,9 @@
   {
     "idx": 31,
     "date_raw": "Sat, 24 May 2025 19:12:21 +0000",
-    "id": "31@Sat, 24 May 2025 19:12:21 +0000",
+    "id": "31@receipt_parsed_sample.json",
     "date": "2025-05-24T19:12:21+00:00",
+    "filename": "receipt_parsed_sample.json",
     "receipt_data": {
       "items": [
         {

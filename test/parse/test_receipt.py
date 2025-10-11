@@ -22,7 +22,7 @@ class TestParseReceipt(unittest.TestCase):
                 keys.remove("warning")
             self.assertEqual(
                 keys,
-                ["date_raw", "id", "idx", "receipt_data"],
+                ["date_raw", "filename", "id", "idx", "receipt_data"],
                 f"bad keys for transaction {trans['id']}",
             )
 
